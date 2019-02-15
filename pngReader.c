@@ -51,23 +51,11 @@ void readPNGHeader(FILE* fid, PNGHeader *header){
 void readPNGFrame(FILE* fid, uint32_t width, uint32_t height, uint8_t* frame, uint8_t bytesPerPixel){
     
     PNGChunk chunk;
-    uint32_t frameloc = 0;
-    uint32_t framesize = sizeof(uint8_t)*bytesPerPixel*width*height+height;
+    uint32_t framesize = height + bytesPerPixel*width*height+1000;  // Includes height bytes of filter codes
+    uint8_t* buffer = malloc(framesize);
+    uint32_t bufferloc = 0;
     
     int ret;
-    z_stream zstrm;
-    
-    /* allocate inflate state */
-    zstrm.zalloc = Z_NULL;
-    zstrm.zfree = Z_NULL;
-    zstrm.opaque = Z_NULL;
-    zstrm.avail_in = 0;
-    zstrm.next_in = Z_NULL;
-    ret = inflateInit(&zstrm);
-    if (ret != Z_OK){
-        zerr(ret);
-        return;
-    }
     
     printf("Reading PNG frame\n");
     
@@ -82,16 +70,34 @@ void readPNGFrame(FILE* fid, uint32_t width, uint32_t height, uint8_t* frame, ui
             continue;
         }
         
-        // Inflate the chunk to the current frame position
+        // Copy the chunk data to the current buffer position
+        memcpy(&buffer[bufferloc], chunk.Data, sizeof(uint8_t)*chunk.Length);
+        bufferloc += sizeof(uint8_t)*chunk.Length;
 #if DEBUG
         printf("data=%s\n",chunk.Data);
-#endif
-        frameloc += inflateChunk(&zstrm, chunk.Data, chunk.Length, &frame[frameloc], framesize-frameloc);
-#if DEBUG
-        printf("frame=%s\n",&frame[frameloc]);
-        printf("frameloc=%d\n",frameloc);
+        printf("bufferloc=%d\n",bufferloc);
 #endif
     }
+    
+    // Inflate the data
+    /* allocate inflate state */
+    z_stream zstrm;
+    zstrm.zalloc = Z_NULL;
+    zstrm.zfree = Z_NULL;
+    zstrm.opaque = Z_NULL;
+    zstrm.avail_in = 0;
+    zstrm.next_in = Z_NULL;
+    ret = inflateInit(&zstrm);
+    if (ret != Z_OK){
+        zerr(ret);
+        return;
+    }
+    
+    inflateData(&zstrm, buffer, bufferloc, frame, framesize);
+#if DEBUG
+    printf("frame=%x\n",frame);
+    printf("framesize=%i\n",framesize);
+#endif
     
     /* done when inflate() says it's done */
     (void)inflateEnd(&zstrm);
@@ -329,7 +335,7 @@ int byteswap(uint8_t* bytes){
  invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
  the version of the library linked do not match, or Z_ERRNO if there
  is an error reading or writing the files. */
-uint32_t inflateChunk(z_stream *zstrm, uint8_t *source, uint32_t sourcelen, uint8_t *dest, uint32_t destlen)
+uint32_t inflateData(z_stream *zstrm, uint8_t *source, uint32_t sourcelen, uint8_t *dest, uint32_t destlen)
 {
     int ret;
     uint32_t have;
