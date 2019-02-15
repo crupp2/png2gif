@@ -1,0 +1,11 @@
+X-GIF convert 9-bit LZW codes to bytes (uncompressed)
+-GIF convert n-bit LZW codes to bytes (compressed)
+-Force 0x00 and 0xFF in color table
+-Dithering
+-Multiple PNGs to animated GIF
+-Implement zlib-lite decompressor
+x-Implement reading PNG Truecolor+alpha
+x-Identify PNG reader limitations (possibly fix, add error messages for unsupported features. e.g., pallete, color options)
+-Add license headers
+-Upload to github
+-Distribute to ATA
