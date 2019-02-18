@@ -15,7 +15,7 @@
 template <typename Iterator>
 Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps) {
     int count = 0;
-    int ncodes = 0;
+    int ncodes = 0;  // Number of codes written
     int nbits = 9;
     int maxDictSize = 1 << nbits;
     // Build the dictionary.
@@ -26,6 +26,10 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
     
     // increment dictSize by two for clear (0x100) and stop (0x101) codes
     dictSize += 2;
+    
+    // Start result with clear code
+    *result++ = 0x100;
+    ncodes++;
     
     std::string w;
     for (std::string::const_iterator it = uncompressed.begin();
@@ -48,14 +52,23 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
                 widthjumps[nbits-9] = ncodes;
                 nbits++;
                 maxDictSize = 1 << nbits;
+                printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                 printf("Table size increase to %i bits at input %i, code %i\n", nbits, count, ncodes);
             }
         }
     }
     
     // Output the code for w.
-    if (!w.empty())
+    if (!w.empty()){
         *result++ = dictionary[w];
+        ncodes++;
+    }
+    
+    // End result with stop code
+    *result++ = 0x101;
+    ncodes++;
+    
+    printf("ncodes written: %i\n",ncodes);
     return result;
 }
 
@@ -160,6 +173,7 @@ extern "C" int LZWcompress(uint8_t* input, uint32_t inlen, uint16_t* output, uin
     printf("inputsize=%lu\n", invec.size());
     compress(invec, std::back_inserter(compressed), widthjumps);
     copy(compressed.begin(), compressed.end(), output);
+    printf("outputsize=%lu\n", compressed.size());
     return compressed.size();
 }
 

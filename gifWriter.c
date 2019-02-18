@@ -60,8 +60,6 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
     fwrite(&h, 2, 1, fid);
     // Write packed byte with 256-byte local color table
     // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
-//    fputc('\xE1', fid);
-//    uint8_t packedbyte = ((N_LCT-1) << 5) + 1;
     uint8_t packedbyte = (1 << 7) + (N_LCT-1);
     fputc(packedbyte, fid);
     
@@ -70,7 +68,6 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
     
     // Write image data
     printf("Writing gif frame data\n");
-//    printf("indices=%s\n",frame);
     
     writeGIFImageCompressed(fid, frame, width, height);
 //    writeGIFImageCompressed9bit(fid, frame, width, height);
@@ -99,22 +96,18 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     putc(8, fid);
     
     // Compress the frame with LZW
-    int n = 1;
-    buffer[0] = 0x100;  // LZW table clear
-    // Full frame through LZW
-    n += LZWcompress(frame, sizeof(uint8_t)*width*height, &buffer[1], widthjumps);
+    // Put full frame through LZW compression
+    int n = LZWcompress(frame, sizeof(uint8_t)*width*height, buffer, widthjumps);
     printf("n=%i\n", n);
     printf("widthjumps={%i,%i,%i,%i}\n",widthjumps[0],widthjumps[1],widthjumps[2],widthjumps[3]);
-    buffer[n] = 0x101;  // LZW table end
-    n++;
     
     bufferptr = buffer;
     
-    // convert codes into bytes
+    // Pack all codes into bytes
     n = packLSB(bufferptr, output, n, startnbits, widthjumps);
     outputptr = output;
     
-    int chunksize = 101;
+    int chunksize = 254;
     while(n > chunksize){
         putc((uint8_t) chunksize, fid);  // Number of bytes in data chunk
         fwrite(outputptr, 1, chunksize, fid);
@@ -123,25 +116,8 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         printf("n=%i\n", n);
     }
     
-//    // Copy the buffer into ?? nbits-bit codes that will fit into chunksize byte chunks
-//    int chunksize = 252;
-//    int ncodes = (8*chunksize)/nbits;  // 8*chunksize bits available will be enough space for ncodes nbits-bit codes.
-//    while(n > ncodes){
-//        putc((uint8_t) chunksize, fid);  // Number of bytes in data chunk
-//        // Convert nbit-bit codes into bytes
-//        packLSB(bufferptr, output, ncodes, nbits);
-//        bufferptr += ncodes;
-//
-//        // Write bytes to file
-//        fwrite(output, 1, chunksize, fid);
-//        n -= (ncodes-1);
-//    }
-    
-    // Write the remainder, truncating n to a uint8_t
+    // Write the remainder
     // Include signal for last data chunk
-//    uint8_t rem = (uint8_t) (n+1);
-    // Convert nbits-bit codes into bytes
-//    n = packLSB(bufferptr, output, rem, nbits-1);
     fwrite(&n, 1, 1, fid);  // Number of bytes in data chunk
     fwrite(outputptr, 1, n, fid);
     
@@ -762,47 +738,50 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
     uint32_t n = 0;
     int nbits = startnbits - 1;
     int jump = 0;
+//    widthjumps[0]=296;
     
     buffer = (uint32_t) input[0];
 #if DEBUG
     printf("length=%i\n",length);
-    printf("input[%i]=0x%x\n",0,input[0]);
+    printf("input[%i]=0x%04x\n",0,input[0]);
 #endif
     for(int i=1;i<length;i++){
         // Grab next nbit-bit code
         tmp = (uint32_t) input[i];
 #if DEBUG
-        printf("input[%i]=0x%x\n",i,input[i]);
+        printf("input[%i]=0x%04x\n",i,input[i]);
 #endif
         
         // If at a width increase index then bump up nbits
         if(i > (widthjumps[jump]+1)){
-            jump++;
-            nbits++;
             printf("widthjumps[jump]=%i\n",widthjumps[jump]);
-            printf("nbits=%i\n",nbits);
+            printf("nbits=%i\n",nbits+1);
+            jump++;
+            shift--;
+            nbits++;
         }
         
         // Find how much to shift the input left
-        shift++;
+        shift += (nbits-7);
         if(shift >= nbits){
             shift -= nbits;
         }
         // Shift the input and add it to the buffer
         buffer += (tmp << (nbits+shift));
 #if DEBUG
-        printf("buffer=0x%x\n",buffer);
+        printf("shift=%i\n",shift);
+        printf("buffer=0x%08x\n",buffer);
 #endif
         // Copy the lowest buffer byte to the output
         *output++ = (uint8_t) buffer;
 #if DEBUG
-        printf("output=0x%x\n",*(output-1));
+        printf("output=0x%02x\n",*(output-1));
 #endif
         n++;
         // Shift the buffer right to clear the copied byte
         buffer = buffer >> 8;
 #if DEBUG
-        printf("buffer=0x%x\n",buffer);
+        printf("buffer=0x%08x\n",buffer);
 #endif
         
         // If shift == 8 then write another byte
@@ -811,8 +790,8 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
             n++;
             buffer = buffer >> 8;
 #if DEBUG
-            printf("output=0x%x\n",*(output-1));
-            printf("buffer=0x%x\n",buffer);
+            printf("output=0x%02x\n",*(output-1));
+            printf("buffer=0x%08x\n",buffer);
 #endif
         }
         
@@ -822,7 +801,7 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
     *output++ = (uint8_t) buffer;
     n++;
 #if DEBUG
-    printf("output=%i\n",*(output-1));
+    printf("output=0x%02x\n",*(output-1));
     printf("n=%i\n",n);
 #endif
     return n;
