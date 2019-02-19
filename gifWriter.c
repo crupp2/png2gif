@@ -4,7 +4,9 @@
 #include "gifWriter.h"
 
 #define N_LCT 8  // # of local color table entries = 2^N_LCT
+#define MAXCODESIZE 12
 #define DEBUG 1
+
 
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay){
 
@@ -84,7 +86,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     
     uint8_t startnbits = 9;  // Start the LZW table at 9 bit codes
     
-    uint32_t widthjumps[4] = {0,0,0,0};  // Location in number of codes where code width increases by one
+    uint32_t widthjumps[10] = {0,0,0,0,0,0,0,0,0,0};  // Location in number of codes where code width increases by one (room for jumps from 2 to 12)
     uint16_t* buffer = malloc(sizeof(uint16_t)*length);  // frame size
     uint8_t* output = malloc(sizeof(uint8_t)*length);    // frame size
     uint8_t* frameptr;
@@ -732,8 +734,8 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
     // Returns number of bytes in output
     // output is padded with zeros at the end to make full bytes
     
-    uint32_t buffer = 0;
-    uint32_t tmp;
+    uint64_t buffer = 0;
+    uint64_t tmp;
     int shift = 0;
     uint32_t n = 0;
     int nbits = startnbits - 1;
@@ -753,7 +755,7 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
 #endif
         
         // If at a width increase index then bump up nbits
-        if(i > (widthjumps[jump]+1)){
+        if(nbits < (MAXCODESIZE-1) && i > (widthjumps[jump]+1)){
             printf("widthjumps[jump]=%i\n",widthjumps[jump]);
             printf("nbits=%i\n",nbits+1);
             jump++;
@@ -764,7 +766,8 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
         // Find how much to shift the input left
         shift += (nbits-7);
         if(shift >= nbits){
-            shift -= nbits;
+//            shift -= nbits;
+            shift -= 8;
         }
         // Shift the input and add it to the buffer
         buffer += (tmp << (nbits+shift));
