@@ -9,12 +9,16 @@
 #include <map>
 #include <vector>
 
+#define MAXTABLESIZE 12  // In bits
+
 // Compress a string to a list of output symbols.
 // The result will be written to the output iterator
 // starting at "result"; the final iterator is returned.
 template <typename Iterator>
 Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps) {
     int count = 0;
+    int jump = 0;
+    int tableMaxed = 0;
     int ncodes = 0;  // Number of codes written
     int nbits = 9;
     int maxDictSize = 1 << nbits;
@@ -45,15 +49,41 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
             *result++ = dictionary[w];
             ncodes++;
             // Add wc to the dictionary
-            dictionary[wc] = dictSize++;
+            if(tableMaxed < 2){
+                dictionary[wc] = dictSize++;
+            }
             w = c;
             // If the table is full, then increase its size
-            if(dictSize >= maxDictSize){
-                widthjumps[nbits-9] = ncodes;
-                nbits++;
-                maxDictSize = 1 << nbits;
-                printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
-                printf("Table size increase to %i bits at input %i, code %i\n", nbits, count, ncodes);
+            if(tableMaxed < 2 && dictSize >= maxDictSize){
+                if(tableMaxed < 1){
+                    widthjumps[jump] = ncodes;
+                    jump++;
+                    nbits++;
+                    maxDictSize = 1 << nbits;
+                    printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
+                    printf("Table size increase to %i bits at input %i, code %i\n", nbits, count, ncodes);
+                }
+                if(nbits >= MAXTABLESIZE){
+                    tableMaxed++;
+                    printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
+                    printf("Table size maxed out at nbits %i, input %i, code %i\n", nbits, count, ncodes);
+                }
+                if(tableMaxed >= 2){
+                    // Clear table and start over
+                    *result++ = 0x100;
+                    ncodes++;
+                    widthjumps[jump] = ncodes;
+                    jump++;
+                    nbits = 9;
+                    dictionary.clear();
+                    for (int i = 0; i < 256; i++)
+                        dictionary[std::string(1, i)] = i;
+                    dictSize = 258;
+                    tableMaxed = 0;
+                    maxDictSize = 1 << nbits;
+                    printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
+                    printf("Table size decrease to %i bits at input %i, code %i\n", nbits, count, ncodes);
+                }
             }
         }
     }
@@ -68,7 +98,8 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
     *result++ = 0x101;
     ncodes++;
     
-    printf("ncodes written: %i\n",ncodes);
+    printf("dictSize: %i\n",dictSize);
+    printf("count: %i, ncodes written: %i\n", count, ncodes);
     return result;
 }
 
