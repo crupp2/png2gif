@@ -742,14 +742,14 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length,  uint8_t sta
     int jump = 0;
 //    widthjumps[0]=296;
     
-    buffer = (uint32_t) input[0];
+    buffer = (uint64_t) input[0];
 #if DEBUG
     printf("length=%i\n",length);
     printf("input[%i]=0x%04x\n",0,input[0]);
 #endif
     for(int i=1;i<length;i++){
         // Grab next nbit-bit code
-        tmp = (uint32_t) input[i];
+        tmp = (uint64_t) input[i];
 #if DEBUG
         printf("input[%i]=0x%04x\n",i,input[i]);
 #endif
