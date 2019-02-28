@@ -3,7 +3,7 @@
 
 #include "gifWriter.h"
 
-#define N_LCT 8  // # of local color table entries = 2^N_LCT
+//#define N_LCT 8  // # of local color table entries = 2^N_LCT
 #define MAXCODESIZE 12
 #define DEBUG 1
 
@@ -60,33 +60,41 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
     fwrite(&w, 2, 1, fid);
     uint16_t h = (uint16_t) height;
     fwrite(&h, 2, 1, fid);
-    // Write packed byte with 256-byte local color table
-    // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
-    uint8_t packedbyte = (1 << 7) + (N_LCT-1);
-    fputc(packedbyte, fid);
+//    // Write packed byte with 256-byte local color table
+//    // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
+//    uint8_t packedbyte = (1 << 7) + (N_LCT-1);
+//    fputc(packedbyte, fid);
     
     // Write local color table
-    writeGIFLCT(fid, frame, width, height);
+    int tablebitsize = writeGIFLCT(fid, frame, width, height);
     
     // Write image data
     printf("Writing gif frame data\n");
     
-    writeGIFImageCompressed(fid, frame, width, height);
+    writeGIFImageCompressed(fid, frame, width, height, tablebitsize);
 //    writeGIFImageCompressed9bit(fid, frame, width, height);
 //    writeGIFImageUncompressed256(fid, frame, width*height);
 //    writeGIFImageUncompressed128(fid, frame, width*height);
     
 }
 
-void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
+void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, int tablebitsize){
     
     printf("Writing compressed frame\n");
     
     uint32_t length = width*height;
     
-    uint8_t startnbits = 9;  // Start the LZW table at 9 bit codes
+    uint8_t startnbits = tablebitsize+1;  // Start the LZW table at 9 bit codes
+    if(startnbits < 3){
+        startnbits = 3;
+    }
     uint16_t clearcode = 1 << (startnbits-1);
     uint16_t stopcode = clearcode + 1;
+#if DEBUG
+    printf("startnbits=%i\n", startnbits);
+    printf("clearcode=0x%x\n", clearcode);
+    printf("stopcode=0x%x\n", stopcode);
+#endif
     
     uint32_t widthjumps[10] = {0,0,0,0,0,0,0,0,0,0};  // Location in number of codes where code width increases by one (room for jumps from 2 to 12)
     uint16_t* buffer = malloc(sizeof(uint16_t)*length);  // frame size
@@ -422,8 +430,30 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     }
     nunique++;
     
+    // Find the minimum table size
+    // This can either be set externally or programmatically found by the number of unique entries
+    int tablebitsize = 1;
+    int tablesize = 1 << tablebitsize;
+    while(nunique > tablesize){
+        if(tablebitsize >= 8){
+            break;
+        }
+        tablebitsize++;
+        tablesize = 1 << tablebitsize;
+    }
+#if DEBUG
+    printf("tablesize=%i\n",tablesize);
+    printf("tablebitsize=%i\n",tablebitsize);
+#endif
+    
+    // Write packed byte of the local image descriptor before writing the local color table
+    // Need to do this here because we only just found the minimum size of the table
+    // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
+    uint8_t packedbyte = (1 << 7) + (tablebitsize-1);
+    fputc(packedbyte, fid);
+    
     // Shrink the color pallete to an optimal set via median cut
-    medianCut(unique, nunique);
+    medianCut(unique, nunique, tablebitsize);
     
     // Write the color table
     // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
@@ -442,7 +472,7 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
             frameptr += 3;
         }
     }
-    fwrite(frame, sizeof(uint8_t), 3*(1 << N_LCT), fid);
+    fwrite(frame, sizeof(uint8_t), 3*(1 << tablebitsize), fid);
     
     // Re-sort unique into sorted state, same as buffer still is
     bufferptr = unique;
@@ -488,11 +518,8 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
         *frameptr++ = buffer[i].colorindex;
     }
     
-    // Return the size of the color table
-#if DEBUG
-    printf("nunique=%d\n", nunique);
-#endif
-    return nunique;
+    // Return the size of the color table in number of bits
+    return tablebitsize;
 }
 
 //uint32_t shrinkGIF(SortedPixel* buffer, uint32_t length){
@@ -507,13 +534,13 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
 //}
 
 
-void medianCut(SortedPixel* unique, uint32_t length){
+void medianCut(SortedPixel* unique, uint32_t length, int tablebitsize){
     // Find optimal 256 color set using the median cut algorithm
     // We will be hard-coding 0x00 and 0xFF since they are so common, so really we want 254 colors
     // This requires first finding 256 colors, then figuring out which two to get rid of
     // Once finished, find the mean for each bin and set the pixels accordingly
     
-    int tablebitsize = N_LCT;
+//    int tablebitsize = N_LCT;
     int tablesize = 1 << tablebitsize;  // = 2^tablebitsize
     
     SortedPixel* uniqueptr;

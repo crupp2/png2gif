@@ -28,7 +28,7 @@ typedef struct _CutBin {
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay);
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
-void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
+void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, int tablebitsize);
 void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 void writeGIFImageUncompressed256(FILE* fid, uint8_t* frame, uint32_t length);
 void writeGIFImageUncompressed128(FILE* fid, uint8_t* frame, uint32_t length);
@@ -36,7 +36,7 @@ uint32_t shrinkGIF(SortedPixel* buffer, uint32_t width, uint32_t height);
 void sortR(SortedPixel* buffer, uint32_t length);
 void sortG(SortedPixel* buffer, uint32_t length);
 void sortB(SortedPixel* buffer, uint32_t length);
-void medianCut(SortedPixel* buffer, uint32_t length);
+void medianCut(SortedPixel* buffer, uint32_t length, int tablebitsize);
 CutBin splitBin(CutBin* bin);
 void getRange(CutBin* bin);
 void dither();
