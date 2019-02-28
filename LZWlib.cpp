@@ -15,8 +15,9 @@
 // The result will be written to the output iterator
 // starting at "result"; the final iterator is returned.
 template <typename Iterator>
-Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps) {
-    int count = 0;
+int compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps) {
+    int junk = 0;
+    int count = 0;  // Number of input bytes used
     int jump = 0;
     int tableMaxed = 0;
     int ncodes = 0;  // Number of codes written
@@ -32,8 +33,8 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
     dictSize += 2;
     
     // Start result with clear code
-    *result++ = 0x100;
-    ncodes++;
+//    *result++ = 0x100;
+//    ncodes++;
     
     std::string w;
     for (std::string::const_iterator it = uncompressed.begin();
@@ -52,9 +53,8 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
             if(tableMaxed < 2){
                 dictionary[wc] = dictSize++;
             }
-            w = c;
             // If the table is full, then increase its size
-            if(tableMaxed < 2 && dictSize >= maxDictSize){
+            if(tableMaxed < 1 && dictSize >= maxDictSize){
                 if(tableMaxed < 1){
                     widthjumps[jump] = ncodes;
                     jump++;
@@ -68,23 +68,18 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
                     printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                     printf("Table size maxed out at nbits %i, input %i, code %i\n", nbits, count, ncodes);
                 }
-                if(tableMaxed >= 2){
-                    // Clear table and start over
-                    *result++ = 0x100;
-                    ncodes++;
-                    widthjumps[jump] = ncodes;
-                    jump++;
-                    nbits = 9;
-                    dictionary.clear();
-                    for (int i = 0; i < 256; i++)
-                        dictionary[std::string(1, i)] = i;
-                    dictSize = 258;
-                    tableMaxed = 0;
-                    maxDictSize = 1 << nbits;
-                    printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
-                    printf("Table size decrease to %i bits at input %i, code %i\n", nbits, count, ncodes);
+            }
+            
+            if(tableMaxed >= 1 && dictSize >= maxDictSize){// && dictionary[w] > maxDictSize){
+                if(junk > 0){
+                // Clear table and return number of input bytes consumed
+                return count;
+                }else{
+                    junk++;
                 }
             }
+            
+            w = c;
         }
     }
     
@@ -95,12 +90,13 @@ Iterator compress(const std::string &uncompressed, Iterator result, uint32_t* wi
     }
     
     // End result with stop code
-    *result++ = 0x101;
-    ncodes++;
+//    *result++ = 0x101;
+//    ncodes++;
     
     printf("dictSize: %i\n",dictSize);
     printf("count: %i, ncodes written: %i\n", count, ncodes);
-    return result;
+//    return result;
+    return count;
 }
 
 // Compress a string to a list of output symbols.
@@ -198,12 +194,16 @@ std::string decompress(Iterator begin, Iterator end) {
 //    return 0;
 //}
 
-extern "C" int LZWcompress(uint8_t* input, uint32_t inlen, uint16_t* output, uint32_t* widthjumps) {
-    std::string invec = std::string(input, input + sizeof(uint8_t)*inlen);
+extern "C" int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps) {
+    std::string invec = std::string(*input, *input + sizeof(uint8_t)*(*inlen));
     std::vector<uint16_t> compressed;
     printf("inputsize=%lu\n", invec.size());
-    compress(invec, std::back_inserter(compressed), widthjumps);
-    copy(compressed.begin(), compressed.end(), output);
+    int ninputused = compress(invec, std::back_inserter(compressed), widthjumps);
+    printf("ninputused=%i\n", ninputused);
+    *inlen -= ninputused;
+    *input += ninputused;
+    copy(compressed.begin(), compressed.end(), *output);
+    *output += compressed.size();
     printf("outputsize=%lu\n", compressed.size());
     return compressed.size();
 }
