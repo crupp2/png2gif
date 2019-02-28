@@ -44,7 +44,7 @@ uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length);
 uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps);
 
 // From LZWlib.cpp
-int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps);
+int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps, uint8_t initialcodesize);
 int LZWcompress9bit(uint8_t* input, uint32_t inlen, uint16_t* output);
 
 #endif

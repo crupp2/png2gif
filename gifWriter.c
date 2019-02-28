@@ -85,6 +85,8 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     uint32_t length = width*height;
     
     uint8_t startnbits = 9;  // Start the LZW table at 9 bit codes
+    uint16_t clearcode = 1 << (startnbits-1);
+    uint16_t stopcode = clearcode + 1;
     
     uint32_t widthjumps[10] = {0,0,0,0,0,0,0,0,0,0};  // Location in number of codes where code width increases by one (room for jumps from 2 to 12)
     uint16_t* buffer = malloc(sizeof(uint16_t)*length);  // frame size
@@ -108,13 +110,13 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     uint32_t inlen = sizeof(uint8_t)*width*height;
     
     // Start the compressed codes with a clear code
-    buffer[0] = 0x100;
+    buffer[0] = clearcode;
     ncodes++;
     bufferptr = buffer+1;
     
     while(islast == 0){
         printf("bufferptr=0x%x\n", bufferptr);
-        ret += LZWcompress(&frameptr, &inlen, &bufferptr, widthjumps);
+        ret += LZWcompress(&frameptr, &inlen, &bufferptr, widthjumps, startnbits);
         ncodes += ret;
         printf("frameptr=0x%x\n", frameptr);
         printf("inlen=%i\n", inlen);
@@ -123,14 +125,14 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         
         if(ret <= 0 && islast == 0){
             // End table with stop code
-            *bufferptr = 0x101;
+            *bufferptr = stopcode;
             ret = 1;
             ncodes++;
             islast = 1;
         }else{
             // Reset table with clear code
             printf("*bufferptr=0x%x\n", *bufferptr);
-            *bufferptr = 0x100;
+            *bufferptr = clearcode;
             printf("bufferptr=0x%x\n", bufferptr);
             ret++;
             ncodes++;

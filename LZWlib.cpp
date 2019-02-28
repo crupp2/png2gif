@@ -15,18 +15,18 @@
 // The result will be written to the output iterator
 // starting at "result"; the final iterator is returned.
 template <typename Iterator>
-int compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps) {
+int compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps, uint8_t initialcodesize) {
     int junk = 0;
     int count = 0;  // Number of input bytes used
     int jump = 0;
     int tableMaxed = 0;
     int ncodes = 0;  // Number of codes written
-    int nbits = 9;
+    int nbits = initialcodesize;
     int maxDictSize = 1 << nbits;
     // Build the dictionary.
-    int dictSize = 256;
+    int dictSize = 1 << (nbits-1);
     std::map<std::string,int> dictionary;
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < dictSize; i++)
         dictionary[std::string(1, i)] = i;
     
     // increment dictSize by two for clear (0x100) and stop (0x101) codes
@@ -190,11 +190,12 @@ std::string decompress(Iterator begin, Iterator end) {
 //    return 0;
 //}
 
-extern "C" int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps) {
+extern "C" int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps, uint8_t initialcodesize) {
     std::string invec = std::string(*input, *input + sizeof(uint8_t)*(*inlen));
     std::vector<uint16_t> compressed;
     printf("inputsize=%lu\n", invec.size());
-    int ninputused = compress(invec, std::back_inserter(compressed), widthjumps);
+    printf("initialcodesize=%i\n", initialcodesize);
+    int ninputused = compress(invec, std::back_inserter(compressed), widthjumps, initialcodesize);
     printf("ninputused=%i\n", ninputused);
     *inlen -= ninputused;
     *input += ninputused;
