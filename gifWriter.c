@@ -103,6 +103,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     int packedn = 0;
     int ret = 1;
     int startshift = 0;
+    uint64_t remain = 0;
     int islast = 0;
     uint32_t inlen = sizeof(uint8_t)*width*height;
     
@@ -111,9 +112,9 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     ncodes++;
     bufferptr = buffer+1;
     
-    while(ret > 0 && inlen > 0){
+    while(islast == 0){
         printf("bufferptr=0x%x\n", bufferptr);
-        ret = LZWcompress(&frameptr, &inlen, &bufferptr, widthjumps);
+        ret += LZWcompress(&frameptr, &inlen, &bufferptr, widthjumps);
         ncodes += ret;
         printf("frameptr=0x%x\n", frameptr);
         printf("inlen=%i\n", inlen);
@@ -132,17 +133,16 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
             *bufferptr = 0x100;
             printf("bufferptr=0x%x\n", bufferptr);
             ret++;
-            ret++;
             ncodes++;
         }
                    
         bufferptr = buffer;
         
         // Pack all codes into bytes
-        packedn += packLSB(bufferptr, &output[packedn], ret, startnbits, startshift, widthjumps);
-        startshift = 2;
+        packedn += packLSB(bufferptr, &output[packedn], ret, startnbits, &remain, &startshift, widthjumps);
         
         bufferptr = buffer;
+        ret = 0;
     }
     
     // Write chunks of encoded bytes
@@ -766,7 +766,7 @@ uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length){
     return n;
 }
 
-uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, int startshift, uint32_t* widthjumps){
+uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps){
     // Convert LZW codes to 8-bit bytes
     // Starts with startnbits-bit codes, which increase by one at the intervals defined in widthjumps
     // Returns number of bytes in output
@@ -774,18 +774,18 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
     
     uint64_t buffer = 0;
     uint64_t tmp;
-    int shift = startshift;
+    int shift = (*startshift)-startnbits;
     uint32_t n = 0;
     int nbits = startnbits - 1;
     int jump = 0;
-//    widthjumps[0]=296;
     
-    buffer = (uint64_t) input[0];
+    buffer = *remain;
 #if DEBUG
     printf("length=%i\n",length);
-    printf("input[%i]=0x%04x\n",0,input[0]);
+    printf("shift=%i\n",shift);
+    printf("buffer=0x%08llx\n",buffer);
 #endif
-    for(int i=1;i<length;i++){
+    for(int i=0;i<length;i++){
         // Grab next nbit-bit code
         tmp = (uint64_t) input[i];
 #if DEBUG
@@ -849,9 +849,24 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
     // Write out the last byte
     *output++ = (uint8_t) buffer;
     n++;
+    buffer = buffer >> 8;
 #if DEBUG
     printf("output=0x%02x\n",*(output-1));
     printf("n=%i\n",n);
 #endif
+    
+    // Save remaining bits
+    *remain = buffer;
+    shift += (nbits-7);
+    if(shift >= nbits){
+        shift -= 8;
+    }
+    *startshift = nbits+1;
+#if DEBUG
+    printf("nbits=%i\n",nbits);
+    printf("remain=0x%08llx\n",buffer);
+    printf("startshift=%i\n",startshift);
+#endif
+    
     return n;
 }
