@@ -95,7 +95,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     frameptr = frame;
     
     // Write the LZW minimum code size byte
-    putc(8, fid);
+    putc(startnbits-1, fid);
     
     // Compress the frame with LZW
     // Compression occurs until the LZW table is full, then it needs to be started again
@@ -861,7 +861,7 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
     if(shift >= nbits){
         shift -= 8;
     }
-    *startshift = nbits+1;
+    *startshift = nbits+1;  // FIXME: Not sure what this should be!
 #if DEBUG
     printf("nbits=%i\n",nbits);
     printf("remain=0x%08llx\n",buffer);

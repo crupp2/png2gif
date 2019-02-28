@@ -32,10 +32,6 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
     // increment dictSize by two for clear (0x100) and stop (0x101) codes
     dictSize += 2;
     
-    // Start result with clear code
-//    *result++ = 0x100;
-//    ncodes++;
-    
     std::string w;
     for (std::string::const_iterator it = uncompressed.begin();
          it != uncompressed.end(); ++it) {
