@@ -129,7 +129,9 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         printf("frameptr=0x%x\n", frameptr);
         printf("inlen=%i\n", inlen);
         printf("ncodes=%i\n", ncodes);
-        printf("widthjumps={%i,%i,%i,%i}\n",widthjumps[0],widthjumps[1],widthjumps[2],widthjumps[3]);
+        printf("widthjumps={%i,%i,%i,%i,%i,%i,%i,%i,%i,%i}\n",widthjumps[0],widthjumps[1],widthjumps[2],widthjumps[3]
+               ,widthjumps[4],widthjumps[5],widthjumps[6],widthjumps[7]
+               ,widthjumps[8],widthjumps[9]);
         
         if(ret <= 0 && islast == 0){
             // End table with stop code
@@ -803,9 +805,9 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
     
     uint64_t buffer = 0;
     uint64_t tmp;
-    int shift = (*startshift)-startnbits;
+    int shift = *startshift;
     uint32_t n = 0;
-    int nbits = startnbits - 1;
+    int nbits = startnbits;
     int jump = 0;
     
     buffer = *remain;
@@ -822,79 +824,49 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
 #endif
         
         // If at a width increase index then bump up nbits
-        if(nbits < (MAXCODESIZE-1) && i > (widthjumps[jump]+1)){
+        if(nbits < MAXCODESIZE && i > (widthjumps[jump]+1)){
             printf("widthjumps[jump]=%i\n",widthjumps[jump]);
             printf("nbits=%i\n",nbits+1);
             jump++;
-            
-            // Find how much to shift the input left
-            shift += (nbits-7);
-            if(shift >= nbits){
-                //            shift -= nbits;
-                shift -= 8;
-            }
-            shift--;
             nbits++;
-        }else{
-        
-            // Find how much to shift the input left
-            shift += (nbits-7);
-            if(shift >= nbits){
-                shift -= 8;
-            }
         }
-            
+        
         // Shift the input and add it to the buffer
-        buffer += (tmp << (nbits+shift));
+        buffer += (tmp << shift);
 #if DEBUG
         printf("shift=%i\n",shift);
         printf("buffer=0x%08llx\n",buffer);
 #endif
-        // Copy the lowest buffer byte to the output
-        *output++ = (uint8_t) buffer;
-#if DEBUG
-        printf("output=0x%02x\n",*(output-1));
-#endif
-        n++;
-        // Shift the buffer right to clear the copied byte
-        buffer = buffer >> 8;
-#if DEBUG
-        printf("buffer=0x%08llx\n",buffer);
-#endif
         
-        // If shift == 8 then write another byte
-        if(shift >= 7){
+        // Update the shift value
+        shift += nbits;
+        
+        // Copy the lowest buffer byte to the output if there is one available
+        while(shift >= 8){
             *output++ = (uint8_t) buffer;
-            n++;
-            buffer = buffer >> 8;
 #if DEBUG
             printf("output=0x%02x\n",*(output-1));
+#endif
+            n++;
+            // Shift the buffer right to clear the copied byte
+            buffer = buffer >> 8;
+#if DEBUG
             printf("buffer=0x%08llx\n",buffer);
 #endif
+            
+            // Update the shift
+            shift -= 8;
         }
         
     }
     
-    // Write out the last byte
-    *output++ = (uint8_t) buffer;
-    n++;
-    buffer = buffer >> 8;
-#if DEBUG
-    printf("output=0x%02x\n",*(output-1));
-    printf("n=%i\n",n);
-#endif
-    
     // Save remaining bits
     *remain = buffer;
-    shift += (nbits-7);
-    if(shift >= nbits){
-        shift -= 8;
-    }
-    *startshift = nbits+1;  // FIXME: Not sure what this should be!
+    *startshift = shift;
 #if DEBUG
     printf("nbits=%i\n",nbits);
     printf("remain=0x%08llx\n",buffer);
-    printf("startshift=%i\n",startshift);
+    printf("startshift=%i\n",*startshift);
 #endif
     
     return n;
