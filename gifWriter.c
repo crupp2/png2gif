@@ -123,10 +123,12 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
                ,widthjumps[4],widthjumps[5],widthjumps[6],widthjumps[7]
                ,widthjumps[8],widthjumps[9]);
         
-        if(ret <= 0 && islast == 0){
+//        if(ret <= 0 && islast == 0){
+        if(inlen == 0){
             // End table with stop code
+            printf("End of codes reached, adding stop code\n");
             *bufferptr = stopcode;
-            ret = 1;
+            ret++;
             ncodes++;
             islast = 1;
         }else{
@@ -141,7 +143,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         bufferptr = buffer;
         
         // Pack all codes into bytes
-        packedn += packLSB(bufferptr, &output[packedn], ret, startnbits, &remain, &startshift, widthjumps);
+        packedn += packLSB(bufferptr, &output[packedn], ret, startnbits, &remain, &startshift, widthjumps, islast);
         
         bufferptr = buffer;
         ret = 0;
@@ -701,9 +703,11 @@ uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length){
     return n;
 }
 
-uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps){
+uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps, int islast){
     // Convert LZW codes to 8-bit bytes
     // Starts with startnbits-bit codes, which increase by one at the intervals defined in widthjumps
+    // Zero-pads end if islast != 0
+    // Otherwise saves remaining data in remain and updates startshift with the remaining shift value
     // Returns number of bytes in output
     // output is padded with zeros at the end to make full bytes
     
@@ -764,7 +768,19 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
         
     }
     
-    // Save remaining bits
+    // If is the last code to be written then zero-pad the last byte (unnecessary since right shifting already does this) and write out the final byte
+    if(islast != 0){
+        *output++ = (uint8_t) buffer;
+#if DEBUG
+        printf("output=0x%02x\n",*(output-1));
+#endif
+        n++;
+        // Shift the buffer right to clear the copied byte
+        buffer = buffer >> 8;
+        shift = 0;
+    }
+    
+    // Store what remains of the buffer for the next call
     *remain = buffer;
     *startshift = shift;
 #if DEBUG
