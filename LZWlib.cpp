@@ -1,7 +1,9 @@
 // Code adapted from: http://rosettacode.org/wiki/LZW_compression
-// Modified to use vector<uint8_t> rather than strings to allow for \x0
-// Keep max table size to 9 bits
-// Built into a library
+// Heavily modified to/by:
+//  Use variable width codes
+//  Consider max table size
+//  Find code width jump locations
+//  Built into a library with C interface
 // Cory Rupp, January 7, 2019
 // MIT License
 
@@ -16,7 +18,7 @@
 // starting at "result"; the final iterator is returned.
 template <typename Iterator>
 int compress(const std::string &uncompressed, Iterator result, uint32_t* widthjumps, uint8_t initialcodesize) {
-    int junk = 0;
+    int last = 0;
     int count = 0;  // Number of input bytes used
     int jump = 0;
     int tableMaxed = 0;
@@ -67,11 +69,11 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
             }
             
             if(tableMaxed >= 1 && dictSize >= maxDictSize){// && dictionary[w] > maxDictSize){
-                if(junk > 0){
+                if(last > 0){
                 // Clear table and return number of input bytes consumed
                 return count;
                 }else{
-                    junk++;
+                    last++;
                 }
             }
             
@@ -85,13 +87,8 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
         ncodes++;
     }
     
-    // End result with stop code
-//    *result++ = 0x101;
-//    ncodes++;
-    
     printf("dictSize: %i\n",dictSize);
     printf("count: %i, ncodes written: %i\n", count, ncodes);
-//    return result;
     return count;
 }
 

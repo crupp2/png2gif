@@ -3,7 +3,6 @@
 
 #include "gifWriter.h"
 
-//#define N_LCT 8  // # of local color table entries = 2^N_LCT
 #define MAXCODESIZE 12
 #define DEBUG 1
 
@@ -38,11 +37,6 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay){
     // Finish off the block
     fwrite("\x00\x00", 2, 1, fid);
     
-    // Write application extension block
-//    fwrite(appext, 19, 1, fid);
-    
-    //
-    
 }
 
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
@@ -60,17 +54,13 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
     fwrite(&w, 2, 1, fid);
     uint16_t h = (uint16_t) height;
     fwrite(&h, 2, 1, fid);
-//    // Write packed byte with 256-byte local color table
-//    // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
-//    uint8_t packedbyte = (1 << 7) + (N_LCT-1);
-//    fputc(packedbyte, fid);
+    // Wait to write the packed byte until after we know the minimum table size
     
     // Write local color table
     int tablebitsize = writeGIFLCT(fid, frame, width, height);
     
     // Write image data
     printf("Writing gif frame data\n");
-    
     writeGIFImageCompressed(fid, frame, width, height, tablebitsize);
 //    writeGIFImageCompressed9bit(fid, frame, width, height);
 //    writeGIFImageUncompressed256(fid, frame, width*height);
@@ -221,27 +211,8 @@ void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint
         n -= chunksize;
         printf("n=%i\n", n);
     }
-//
-//    // Copy the buffer into ?? 9-bit codes that will fit into chunksize byte chunks
-//    int chunksize = 101;  // Using 252 here because otherwise ncodes is not an integer number and will have trailing zeros, which is not correct.
-//    int ncodes = (8*chunksize)/9;  // 8*chunksize bits available will be enough space for ncodes 9-bit codes.
-//    while(n > ncodes){
-//        putc((uint8_t) chunksize, fid);  // Number of bytes in data chunk
-//        // Convert 9-bit codes into bytes
-//        convert9to8(bufferptr, output, ncodes);
-//        bufferptr += ncodes;
-//
-//        // Write bytes to file
-//        fwrite(output, 1, chunksize, fid);
-//        n -= (ncodes);
-//    }
     
-    // Write the remainder, truncating n to a uint8_t
-    // Include signal for last data chunk
-//    uint8_t rem = (uint8_t) (n+1);
-    // Convert 9-bit codes into bytes
-//    n = convert9to8(bufferptr, output, rem);
-//    n = packLSB(bufferptr, output, rem, 8);
+    // Write the remainder
     fwrite(&n, 1, 1, fid);  // Number of bytes in data chunk
     fwrite(outputptr, 1, n, fid);
     
@@ -251,7 +222,6 @@ void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint
     // Free allocated memory
     free(buffer);
     free(output);
-    
 }
 
 void writeGIFImageUncompressed256(FILE* fid, uint8_t* frame, uint32_t length){
@@ -395,12 +365,8 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
         bufferptr->G = *frameptr++;
         bufferptr->B = *frameptr++;
         bufferptr->frameindex = i;
-//        printf("pixel #%i:RGB=%i,%i,%i\n",i,bufferptr->R,bufferptr->G,bufferptr->B);
         bufferptr++;
-//        frameptr += 3;
     }
-    
-    
     
     // Sort the buffer by the pixel color
     bufferptr = buffer;
@@ -496,24 +462,6 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     // Dither the image based on the smaller color pallete
     dither();
     
-//
-//    // count needs to be size 2^n up to 256 (n=8)
-//    // TODO
-//
-//    // Sort the buffer back into frame order
-//    bufferptr = buffer;
-//    qsort((void*)bufferptr, npixel, sizeof(SortedPixel), comparefcn2);
-//
-//    // Write the color table
-//    // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
-//    frameptr = frame;
-//    for(int i=0;i<count;i++){
-//        memcpy(frameptr, &(unique[i].pixel), 3);  // Copy three RGB bytes into uint8_t*
-//        frameptr += 3;
-//    }
-//    frameptr = frame;
-//    fwrite(frameptr, sizeof(uint8_t), 3*npixel, fid);
-    
     // Store image indices in frame
     frameptr = frame;
     for(int i=0;i<npixel;i++){
@@ -524,25 +472,12 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     return tablebitsize;
 }
 
-//uint32_t shrinkGIF(SortedPixel* buffer, uint32_t length){
-//    // First, do a median cut process to find the optimal colorspace for 256 colors
-//
-//    // Find colorspace
-//    medianCut(buffer, length);
-//
-//
-//
-//    return 0;
-//}
-
-
 void medianCut(SortedPixel* unique, uint32_t length, int tablebitsize){
     // Find optimal 256 color set using the median cut algorithm
     // We will be hard-coding 0x00 and 0xFF since they are so common, so really we want 254 colors
     // This requires first finding 256 colors, then figuring out which two to get rid of
     // Once finished, find the mean for each bin and set the pixels accordingly
     
-//    int tablebitsize = N_LCT;
     int tablesize = 1 << tablebitsize;  // = 2^tablebitsize
     
     SortedPixel* uniqueptr;
@@ -631,20 +566,8 @@ CutBin splitBin(CutBin* bin){
     
     // Find ranges of each color
     getRange(bin);
-//    bin.minR = bin.buffer[0].R;
-//    bin.maxR = bin.buffer[bin.length-1].R;
-//    bin.minG = bin.buffer[0].G;
-//    bin.maxG = bin.buffer[bin.length-1].G;
-//    bin.minB = bin.buffer[0].B;
-//    bin.maxB = bin.buffer[bin.length-1].B;
     
     // Find the largest range (bias against B with R over G in tiebreaker)
-//    printf("bin.maxR, bin.minR: %i, %i\n", bin->maxR,bin->minR);
-//    printf("bin.maxG, bin.minG: %i, %i\n", bin->maxG,bin->minG);
-//    printf("bin.maxB, bin.minB: %i, %i\n", bin->maxB,bin->minB);
-//    printf("bin.maxR-bin.minR: %i\n", bin->maxR-bin->minR);
-//    printf("bin.maxG-bin.minG: %i\n", bin->maxG-bin->minG);
-//    printf("bin.maxB-bin.minB: %i\n", bin->maxB-bin->minB);
     if((bin->maxR-bin->minR) >= (bin->maxG-bin->minG)){
         if((bin->maxR-bin->minR) >= (bin->maxB-bin->minB)){
             // R is largest
@@ -678,8 +601,6 @@ void getRange(CutBin* bin){
     sortR(bin->buffer, bin->length);
     bin->minR = bin->buffer[0].R;
     bin->maxR = bin->buffer[bin->length-1].R;
-//    printf("1Sorted R (max, min): %i, %i\n", bin->buffer[bin->length-1].R, bin->buffer[0].R);
-//    printf("2Sorted R (max, min): %i, %i\n", bin->maxR, bin->minR);
     
     sortG(bin->buffer, bin->length);
     bin->minG = bin->buffer[0].G;
@@ -688,23 +609,6 @@ void getRange(CutBin* bin){
     sortB(bin->buffer, bin->length);
     bin->minB = bin->buffer[0].B;
     bin->maxB = bin->buffer[bin->length-1].B;
-    
-//    switch(color){
-//        case 0:  // R
-//            sortR(bin.buffer, bin.length);
-//            return bin.buffer[length-1].R - bin.buffer[0].R;
-//        case 1:  // G
-//            sortG(bin.buffer, bin.length);
-//            return bin.buffer[length-1].G - bin.buffer[0].G;
-//        case 2:  // B
-//            sortB(bin.buffer, bin.length);
-//            return bin.buffer[length-1].B - bin.buffer[0].B;
-//        default:
-//            printf("getRange color %d is out of range\n", color);
-//            return 0;
-//    }
-    
-    
 }
 
 void sortR(SortedPixel* buffer, uint32_t length){
