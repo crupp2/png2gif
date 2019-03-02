@@ -101,7 +101,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     // Compression occurs until the LZW table is full, then it needs to be started again
     int ncodes = 0;
     int packedn = 0;
-    int ret = 1;
+    int ret = 0;
     int startshift = 0;
     uint64_t remain = 0;
     int islast = 0;
@@ -109,6 +109,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     
     // Start the compressed codes with a clear code
     buffer[0] = clearcode;
+    ret++;
     ncodes++;
     bufferptr = buffer+1;
     
@@ -145,8 +146,15 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         // Pack all codes into bytes
         packedn += packLSB(bufferptr, &output[packedn], ret, startnbits, &remain, &startshift, widthjumps, islast);
         
+        // Reset
         bufferptr = buffer;
         ret = 0;
+        
+        // This mostly works, but is weird and causes a shift in the image. There was already a clear code for max-bits (i.e., 12), why do we need another for start-bits?
+//        buffer[0] = clearcode;
+//        ret++;
+//        ncodes++;
+//        bufferptr++;
     }
     
     // Write chunks of encoded bytes

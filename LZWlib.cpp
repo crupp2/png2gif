@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 
-#define MAXTABLESIZE 12  // In bits
+#define MAXCODESIZE 12  // In bits
 
 // Compress a string to a list of output symbols.
 // The result will be written to the output iterator
@@ -61,7 +61,7 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
                     printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                     printf("Table size increase to %i bits at input %i, code %i\n", nbits, count, ncodes);
                 }
-                if(nbits >= MAXTABLESIZE){
+                if(nbits >= MAXCODESIZE){
                     tableMaxed++;
                     printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                     printf("Table size maxed out at nbits %i, input %i, code %i\n", nbits, count, ncodes);
@@ -71,9 +71,11 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
             if(tableMaxed >= 1 && dictSize >= maxDictSize){// && dictionary[w] > maxDictSize){
                 if(last > 0){
                 // Clear table and return number of input bytes consumed
-                return count;
+                    return count;
                 }else{
                     last++;
+                    // Can increment "tableMaxed" instead of "last" and keep the table size at the max, however this typically results in larger file sizes
+//                    tableMaxed++;
                 }
             }
             
