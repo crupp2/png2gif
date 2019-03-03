@@ -71,7 +71,7 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
             if(tableMaxed >= 1 && dictSize >= maxDictSize){// && dictionary[w] > maxDictSize){
                 if(last > 0){
                 // Clear table and return number of input bytes consumed
-                    return count;
+                    return count-1;
                 }else{
                     last++;
                     // Can increment "tableMaxed" instead of "last" and keep the table size at the max, however this typically results in larger file sizes

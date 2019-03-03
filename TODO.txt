@@ -1,6 +1,6 @@
-X-GIF convert 9-bit LZW codes to bytes (uncompressed)
--GIF handle arbitrary LZW start code size
--GIF convert n-bit LZW codes to bytes (compressed)
+x-GIF convert 9-bit LZW codes to bytes (uncompressed)
+x-GIF handle arbitrary LZW start code size
+x-GIF convert n-bit LZW codes to bytes (compressed)
 -Force 0x00 and 0xFF in color table
 -Dithering
 -Multiple PNGs to animated GIF

@@ -725,6 +725,8 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
     uint32_t n = 0;
     int nbits = startnbits;
     int jump = 0;
+    int count = 1;  // For some reason it is necessary to start this at 1, perhaps because of the initial clear code?
+    uint64_t clearcode = 1 << (startnbits-1);
     
     buffer = *remain;
 #if DEBUG
@@ -739,8 +741,13 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
         printf("input[%i]=0x%04x\n",i,input[i]);
 #endif
         
+        // If a clear code is encountered, then reset the counter for checking jumps
+        if(tmp == clearcode){
+            count = 0;
+        }
+        
         // If at a width increase index then bump up nbits
-        if(nbits < MAXCODESIZE && i > (widthjumps[jump]+1)){
+        if(nbits < MAXCODESIZE && count > (widthjumps[jump]+1)){
             printf("widthjumps[jump]=%i\n",widthjumps[jump]);
             printf("nbits=%i\n",nbits+1);
             jump++;
@@ -773,6 +780,8 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
             // Update the shift
             shift -= 8;
         }
+        
+        count++;
         
     }
     
