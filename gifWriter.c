@@ -2,9 +2,10 @@
 #include <string.h>
 
 #include "gifWriter.h"
+#include "dither.h"
 
 #define MAXCODESIZE 12
-#define DEBUG 1
+#define DEBUG 0
 
 
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay){
@@ -114,29 +115,39 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     bufferptr = buffer+1;
     
     while(islast == 0){
+#if DEBUG
         printf("bufferptr=0x%x\n", bufferptr);
+#endif
         ret += LZWcompress(&frameptr, &inlen, &bufferptr, widthjumps, startnbits);
         ncodes += ret;
+#if DEBUG
         printf("frameptr=0x%x\n", frameptr);
         printf("inlen=%i\n", inlen);
         printf("ncodes=%i\n", ncodes);
         printf("widthjumps={%i,%i,%i,%i,%i,%i,%i,%i,%i,%i}\n",widthjumps[0],widthjumps[1],widthjumps[2],widthjumps[3]
                ,widthjumps[4],widthjumps[5],widthjumps[6],widthjumps[7]
                ,widthjumps[8],widthjumps[9]);
+#endif
         
 //        if(ret <= 0 && islast == 0){
         if(inlen == 0){
             // End table with stop code
+#if DEBUG
             printf("End of codes reached, adding stop code\n");
+#endif
             *bufferptr = stopcode;
             ret++;
             ncodes++;
             islast = 1;
         }else{
             // Reset table with clear code
+#if DEBUG
             printf("*bufferptr=0x%x\n", *bufferptr);
+#endif
             *bufferptr = clearcode;
+#if DEBUG
             printf("bufferptr=0x%x\n", bufferptr);
+#endif
             ret++;
             ncodes++;
         }
@@ -165,7 +176,9 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         fwrite(outputptr, 1, chunksize, fid);
         outputptr += chunksize;
         packedn -= chunksize;
+#if DEBUG
         printf("packedn=%i\n", packedn);
+#endif
     }
     
     // Write the remainder
@@ -642,10 +655,6 @@ void sortB(SortedPixel* buffer, uint32_t length){
 #endif
 }
 
-void dither(){
-    
-}
-
 uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length){
     // Convert 9-bit LZW codes to 8-bit bytes
     // Returns number of bytes in output
@@ -748,8 +757,10 @@ uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t star
         
         // If at a width increase index then bump up nbits
         if(nbits < MAXCODESIZE && count > (widthjumps[jump]+1)){
+#if DEBUG
             printf("widthjumps[jump]=%i\n",widthjumps[jump]);
             printf("nbits=%i\n",nbits+1);
+#endif
             jump++;
             nbits++;
         }

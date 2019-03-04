@@ -39,7 +39,6 @@ void sortB(SortedPixel* buffer, uint32_t length);
 void medianCut(SortedPixel* buffer, uint32_t length, int tablebitsize);
 CutBin splitBin(CutBin* bin);
 void getRange(CutBin* bin);
-void dither();
 uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length);
 uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps, int islast);
 

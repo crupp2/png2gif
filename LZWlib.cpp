@@ -12,6 +12,7 @@
 #include <vector>
 
 #define MAXCODESIZE 12  // In bits
+#define DEBUG 0
 
 // Compress a string to a list of output symbols.
 // The result will be written to the output iterator
@@ -58,13 +59,17 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
                     jump++;
                     nbits++;
                     maxDictSize = 1 << nbits;
+#if DEBUG
                     printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                     printf("Table size increase to %i bits at input %i, code %i\n", nbits, count, ncodes);
+#endif
                 }
                 if(nbits >= MAXCODESIZE){
                     tableMaxed++;
+#if DEBUG
                     printf("maxDictSize=%x, dictSize=%x\n",maxDictSize,dictSize);
                     printf("Table size maxed out at nbits %i, input %i, code %i\n", nbits, count, ncodes);
+#endif
                 }
             }
             
@@ -89,8 +94,10 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
         ncodes++;
     }
     
+#if DEBUG
     printf("dictSize: %i\n",dictSize);
     printf("count: %i, ncodes written: %i\n", count, ncodes);
+#endif
     return count;
 }
 
@@ -192,15 +199,21 @@ std::string decompress(Iterator begin, Iterator end) {
 extern "C" int LZWcompress(uint8_t** input, uint32_t *inlen, uint16_t** output, uint32_t* widthjumps, uint8_t initialcodesize) {
     std::string invec = std::string(*input, *input + sizeof(uint8_t)*(*inlen));
     std::vector<uint16_t> compressed;
+#if DEBUG
     printf("inputsize=%lu\n", invec.size());
     printf("initialcodesize=%i\n", initialcodesize);
+#endif
     int ninputused = compress(invec, std::back_inserter(compressed), widthjumps, initialcodesize);
+#if DEBUG
     printf("ninputused=%i\n", ninputused);
+#endif
     *inlen -= ninputused;
     *input += ninputused;
     copy(compressed.begin(), compressed.end(), *output);
     *output += compressed.size();
+#if DEBUG
     printf("outputsize=%lu\n", compressed.size());
+#endif
     return compressed.size();
 }
 
