@@ -1,31 +1,60 @@
 
 #include <string.h>
+#include <getopt.h>
 
 #include "pngReader.h"
 #include "gifWriter.h"
 
+#define FILENAMESIZE 256
 
-int main () {
+
+typedef struct _OptStruct {
+    int fileind;
+    int nfile;
+    float delay;
+} OptStruct;
+
+OptStruct argParser(int argc, char **argv);
+
+
+int main (int argc, char **argv) {
     FILE *fid;
     FILE *fidgif;
-    char filename[] = "file1.png";
+    char giffilename[FILENAMESIZE];
+    int pngfileind;
     uint8_t* frame=NULL;
     PNGHeader header;
     
-    uint16_t delay = 25;  // Delay between frames in 1/100 sec
+    OptStruct opts = argParser(argc, argv);
+    
+    uint16_t delay = (uint16_t) (opts.delay*100);  // Delay between frames in 1/100 sec
+    
+    // If only one file then use same basename for .gif
+    strcpy(giffilename, argv[opts.fileind]);
+    if(opts.nfile == 1){
+        pngfileind = opts.fileind;
+        // Replace extension
+        int namelen = strlen(giffilename);
+        strcpy(giffilename+namelen-4, ".gif");
+    }else{
+        pngfileind = opts.fileind+1;
+    }
+    
+    printf("giffilename=%s\n", giffilename);
     
     // Open the gif file
-    fidgif = fopen("file.gif", "wb");
+    fidgif = fopen(giffilename, "wb");
     
-    for(int i=1; i<2; i++){
-        fid = fopen(filename, "rb");
+    for(int i=pngfileind; i<argc; i++){
+        printf("pngfilename=%s\n", argv[i]);
+        fid = fopen(argv[i], "rb");
         
         // Get png header and make sure the frame is the same size
         readPNGHeader(fid, &header);
         
         // Check for supported PNG formats
         if(header.ColorType != 2 && header.ColorType != 6){
-            printf("Error: PNG reader only supports 24-bit or 32-bit Truecolor images (colorType=%i)\n", header.ColorType);
+            printf("Error: PNG reader only supports 24-bit or 32-bit Truecolor images (this image colorType=%i)\n", header.ColorType);
             return -1;
         }
         if(header.Interlace != 0){
@@ -71,4 +100,56 @@ int main () {
     free(frame);
     
     return(0);
+}
+
+void usage(char **argv){
+    printf("\nPNG to GIF converter.\n\n Usage: %s [-t <delay>] PNGfile1 [PNGfile2 ...]\n\n", argv[0]);
+}
+
+OptStruct argParser(int argc, char **argv){
+    
+    int ch;
+    OptStruct opts;
+    
+    // Set defaults
+    opts.delay = 0.25;  // Delay in seconds
+    
+    static struct option longopts[] = {
+        {"delay", required_argument, NULL, 't'},
+        {"help",  no_argument,       NULL, 'h'}
+    };
+
+    while ((ch = getopt_long(argc, argv, "ht:" ,longopts, NULL)) != -1){
+        switch(ch){
+            case 't':
+                opts.delay = atof(optarg);
+                break;
+            case 'h':
+            case '?':
+            default:
+                usage(argv);
+                exit(0);
+        }
+    }
+    
+    opts.fileind = optind;
+    opts.nfile = argc - optind;
+    printf("fileInd=%i, nfile=%d, delay=%f\n", opts.fileind, opts.nfile, opts.delay);
+    
+    if(opts.nfile < 1){
+        printf("%s: At least one input file required. Exiting.\n", argv[0]);
+        exit(-1);
+    }
+    
+    // Make sure files exist and can be opened
+    for(int i=opts.fileind; i<argc; i++){
+        FILE* fid = fopen(argv[i], "r");
+        if(fid == 0){
+            printf("%s: Cannot open file %s. Exiting\n", argv[0], argv[i]);
+            exit(-1);
+        }
+        fclose(fid);
+    }
+
+    return opts;
 }
