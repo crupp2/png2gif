@@ -1,7 +1,12 @@
 
+#include <stdio.h>
+#include <math.h>
+
 #include "dither.h"
 
-void dither(SortedPixel* unique, int nunique, SortedPixel* frame, uint32_t width, uint32_t height){
+#define DEBUG 0
+
+void dither(SortedPixel* palette, int npalette, SortedPixel* frame, uint32_t width, uint32_t height){
     // Dither the image in frame of size width x height using color table in unique of size nunique
     // Use non-serpentine Floyd-Steinberg dithering
     
@@ -28,47 +33,50 @@ void dither(SortedPixel* unique, int nunique, SortedPixel* frame, uint32_t width
             oldpixel = frame[j*width+i];
             
             // Find closest color
-            ind = findClosestColor(unique, nunique, oldpixel);
-            newpixel = unique[ind];
+            ind = findClosestColor(palette, npalette, oldpixel);
+            newpixel = palette[ind];
+#if DEBUG
+            printf("dist=%f\n", newpixel.residualR);
+#endif
             
             // Get quantization error for each color
             //FIXME: This needs to include quantization error, also need to watch for negative overflow
             errorR = oldpixel.residualR + (float)oldpixel.R - (float)newpixel.R;
             errorG = oldpixel.residualG + (float)oldpixel.G - (float)newpixel.G;
             errorB = oldpixel.residualB + (float)oldpixel.B - (float)newpixel.B;
+#if DEBUG
+            printf("errorRGB={%f,%f,%f}\n", errorR, errorG, errorB);
+#endif
             
             // Set pixel color to the closest color
             oldpixel.colorindex = newpixel.colorindex;
+            frame[j*width+i] = oldpixel;
             
             // Distribute quantization error to other pixels
             // Pixel to right
             if(i < (width-1)){
-                oldpixel = frame[j*width+i+1];
-                oldpixel.residualR += errorR * 7 / 16;
-                oldpixel.residualG += errorG * 7 / 16;
-                oldpixel.residualB += errorB * 7 / 16;
+                frame[j*width+i+1].residualR += errorR * 7 / 16;
+                frame[j*width+i+1].residualG += errorG * 7 / 16;
+                frame[j*width+i+1].residualB += errorB * 7 / 16;
             }
             if(j < (height-1)){
                 // Pixel below and left
                 if(i > 0){
-                    oldpixel = frame[(j+1)*width+i-1];
-                    oldpixel.residualR += errorR * 3 / 16;
-                    oldpixel.residualG += errorG * 3 / 16;
-                    oldpixel.residualB += errorB * 3 / 16;
+                    frame[(j+1)*width+i-1].residualR += errorR * 3 / 16;
+                    frame[(j+1)*width+i-1].residualG += errorG * 3 / 16;
+                    frame[(j+1)*width+i-1].residualB += errorB * 3 / 16;
                 }
                 
                 // Pixel below
-                oldpixel = frame[(j+1)*width+i];
-                oldpixel.residualR += errorR * 5 / 16;
-                oldpixel.residualG += errorG * 5 / 16;
-                oldpixel.residualB += errorB * 5 / 16;
+                frame[(j+1)*width+i].residualR += errorR * 5 / 16;
+                frame[(j+1)*width+i].residualG += errorG * 5 / 16;
+                frame[(j+1)*width+i].residualB += errorB * 5 / 16;
                 
                 // Pixel below and right
                 if(i < (width-1)){
-                    oldpixel = frame[(j+1)*width+i+1];
-                    oldpixel.residualR += errorR * 1 / 16;
-                    oldpixel.residualG += errorG * 1 / 16;
-                    oldpixel.residualB += errorB * 1 / 16;
+                    frame[(j+1)*width+i+1].residualR += errorR * 1 / 16;
+                    frame[(j+1)*width+i+1].residualG += errorG * 1 / 16;
+                    frame[(j+1)*width+i+1].residualB += errorB * 1 / 16;
                 }
             }
             
@@ -77,6 +85,38 @@ void dither(SortedPixel* unique, int nunique, SortedPixel* frame, uint32_t width
     
 }
 
-uint32_t findClosestColor(SortedPixel* unique, int nunique, SortedPixel pixel){
+int comparefcn_residualR(const void* first, const void* second){
+    float diff = ((SortedPixel*)first)->residualR - ((SortedPixel*)second)->residualR;
+    if(diff > 0){
+        return 1;
+    }else if(diff < 0){
+        return -1;
+    }else{
+        return 0;
+    }
+}
+
+uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel){
+    // Returns the color index of the color table color closest to the color of pixel
+    // This algorithm is crazy slow
+    
+    float R, G, B;
+    
+    R = (float)pixel.R + pixel.residualR;
+    G = (float)pixel.G + pixel.residualG;
+    B = (float)pixel.B + pixel.residualB;
+    
+    // Find the distance to all palette entries
+    // Store the distance in palette.residualR since it is not being used
+    float dist;
+    for(int i=0; i<npalette; i++){
+        dist = sqrt(powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2));
+        palette[i].residualR = dist;
+    }
+    
+    // Sort the palette by the distance, which should all be >= 0
+    qsort((void*)palette, npalette, sizeof(SortedPixel), comparefcn_residualR);
+    
+    // After sorting, the closest pixel will always be the first
     return 0;
 }

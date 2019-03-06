@@ -6,3 +6,5 @@
 ../png2gif file1f.png
 ../png2gif file1g.gif file1g.png
 
+# Test dithering
+../png2gif file1f_full.png
