@@ -11,6 +11,7 @@
 #include <map>
 #include <vector>
 
+#define MAXINT 2147483647
 #define MAXCODESIZE 12  // In bits
 #define DEBUG 0
 
@@ -26,6 +27,12 @@ int compress(const std::string &uncompressed, Iterator result, uint32_t* widthju
     int ncodes = 0;  // Number of codes written
     int nbits = initialcodesize;
     int maxDictSize = 1 << nbits;
+    
+    // Initialize widthjumps to ensure that unused jumps won't happen
+    for(int i=0;i<10;i++){
+        widthjumps[i] = MAXINT;
+    }
+    
     // Build the dictionary.
     int dictSize = 1 << (nbits-1);
     std::map<std::string,int> dictionary;
