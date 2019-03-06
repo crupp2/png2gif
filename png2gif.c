@@ -142,12 +142,19 @@ OptStruct argParser(int argc, char **argv){
     }
     
     // Make sure files exist and can be opened
+    // If the gif output file then it doesn't have to exist
     for(int i=opts.fileind; i<argc; i++){
         FILE* fid = fopen(argv[i], "r");
+        
         if(fid == 0){
+            // If first file and there is more than one file then it is a gif and can be missing
+            if(i == opts.fileind && opts.nfile > 1){
+                continue;
+            }
             printf("%s: Cannot open file %s. Exiting\n", argv[0], argv[i]);
             exit(-1);
         }
+        
         fclose(fid);
     }
 
