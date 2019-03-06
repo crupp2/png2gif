@@ -7,11 +7,14 @@ typedef struct _SortedPixel {
     uint8_t R;
     uint8_t G;
     uint8_t B;
+    uint8_t colorindex;
     uint32_t frameindex;
     uint32_t sortedindex;
-    uint8_t colorindex;
     uint32_t npixel;
-    float residual;  // Used for storing residual pixel error when dithering
+    // Used for storing residual pixel error when dithering
+    float residualR;
+    float residualG;
+    float residualB;
 } SortedPixel;
 
 #endif

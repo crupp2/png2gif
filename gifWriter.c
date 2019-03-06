@@ -364,7 +364,7 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     buffer = malloc(sizeof(SortedPixel)*npixel);
     unique = malloc(sizeof(SortedPixel)*npixel);
     memset(buffer, 0, sizeof(SortedPixel)*npixel);
-    memset(unique, 0, sizeof(SortedPixel)*npixel);  // Strictly not necessary, but otherwise we may get junk at the end of the color table if there are fewer unique colors than the length of the color table. This way, the extra entries will be zero.
+    memset(unique, 0, sizeof(SortedPixel)*npixel);  // Necessary to prevent junk at the end of the color table if there are fewer unique colors than the length of the color table. Also for zeroing out residual for dithering.
     
     // Set pointers
     bufferptr = buffer;
@@ -459,6 +459,7 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     qsort((void*)bufferptr, nunique, sizeof(SortedPixel), comparefcn_sortind);
     
     // Set buffer.colorindex based on unique entries
+    // Only necessary if not doing dithering
     bufferptr = buffer;
     for(int i=0;i<nunique;i++){
         for(int j=0;j<unique[i].npixel;j++){
