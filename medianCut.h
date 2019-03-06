@@ -2,7 +2,8 @@
 #ifndef _MEDIANCUT_H_
 #define _MEDIANCUT_H_
 
-#include "gifWriter.h"
+#include <stdlib.h>
+#include "pixel.h"
 
 typedef struct _CutBin {
     uint8_t minR;

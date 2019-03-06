@@ -1,19 +1,9 @@
 
 #ifndef _GIFWRITER_H_
 #define _GIFWRITER_H_
+
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef struct _SortedPixel {
-    uint32_t pixel;
-    uint8_t R;
-    uint8_t G;
-    uint8_t B;
-    uint32_t frameindex;
-    uint32_t sortedindex;
-    uint8_t colorindex;
-    uint32_t npixel;
-} SortedPixel;
 
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay);
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
