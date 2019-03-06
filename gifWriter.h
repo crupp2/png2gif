@@ -1,5 +1,6 @@
 
 #ifndef _GIFWRITER_H_
+#define _GIFWRITER_H_
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,13 +33,6 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
 void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 void writeGIFImageUncompressed256(FILE* fid, uint8_t* frame, uint32_t length);
 void writeGIFImageUncompressed128(FILE* fid, uint8_t* frame, uint32_t length);
-uint32_t shrinkGIF(SortedPixel* buffer, uint32_t width, uint32_t height);
-void sortR(SortedPixel* buffer, uint32_t length);
-void sortG(SortedPixel* buffer, uint32_t length);
-void sortB(SortedPixel* buffer, uint32_t length);
-void medianCut(SortedPixel* buffer, uint32_t length, int tablebitsize);
-CutBin splitBin(CutBin* bin);
-void getRange(CutBin* bin);
 uint32_t convert9to8(uint16_t* input, uint8_t* output, uint32_t length);
 uint32_t packLSB(uint16_t* input, uint8_t* output, uint32_t length, uint8_t startnbits, uint64_t* remain, int* startshift, uint32_t* widthjumps, int islast);
 

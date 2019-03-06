@@ -1,5 +1,7 @@
 
 #ifndef _PNGREADER_H_
+#define _PNGREADER_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <zlib.h>
