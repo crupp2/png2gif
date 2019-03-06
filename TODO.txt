@@ -7,7 +7,8 @@ x-GIF convert n-bit LZW codes to bytes (compressed)
 -Implement zlib-lite decompressor
 x-Implement reading PNG Truecolor+alpha
 x-Identify PNG reader limitations (possibly fix, add error messages for unsupported features. e.g., pallete, color options)
--Build test cases
+x-Create test cases
 -Add license headers
 -Upload to github
+-Create GUI for file selection
 -Distribute to ATA
