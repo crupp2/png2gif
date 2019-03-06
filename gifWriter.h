@@ -15,17 +15,6 @@ typedef struct _SortedPixel {
     uint32_t npixel;
 } SortedPixel;
 
-typedef struct _CutBin {
-    uint8_t minR;
-    uint8_t maxR;
-    uint8_t minG;
-    uint8_t maxG;
-    uint8_t minB;
-    uint8_t maxB;
-    SortedPixel* buffer;  // Buffer containing pixels pointing to the starting position of this bin
-    uint32_t length;  // Number of pixels in this bin
-} CutBin;
-
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay);
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
