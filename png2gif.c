@@ -11,9 +11,19 @@
 typedef struct _OptStruct {
     int fileind;
     int nfile;
-    float delay;
-    int dither;
+    GIFOptStruct gifopts;
 } OptStruct;
+
+OptStruct newOptStructInst(){
+    // Set defaults
+    OptStruct opts;
+    
+    opts.fileind = 0;
+    opts.nfile = 0;
+    opts.gifopts = newGIFOptStructInst();
+    
+    return opts;
+}
 
 OptStruct argParser(int argc, char **argv);
 
@@ -25,12 +35,8 @@ int main (int argc, char **argv) {
     int pngfileind;
     uint8_t* frame=NULL;
     PNGHeader header;
-    GIFOptStruct gifopts;
     
     OptStruct opts = argParser(argc, argv);
-    
-    gifopts.delay = (uint16_t) (opts.delay*100);  // Delay between frames in 1/100 sec
-    gifopts.dither = opts.dither;
     
     // If only one file then use same basename for .gif
     strcpy(giffilename, argv[opts.fileind]);
@@ -84,11 +90,11 @@ int main (int argc, char **argv) {
         
         // If just starting then write the gif header
         if(ftell(fidgif) == 0){
-            writeGIFHeader(fidgif, header.Width, header.Height, gifopts);
+            writeGIFHeader(fidgif, header.Width, header.Height, opts.gifopts);
         }
         
         // Write frame to gif
-        writeGIFFrame(fidgif, frame, header.Width, header.Height, gifopts);
+        writeGIFFrame(fidgif, frame, header.Width, header.Height, opts.gifopts);
         
         fclose(fid);
     }
@@ -112,10 +118,7 @@ void usage(char **argv){
 OptStruct argParser(int argc, char **argv){
     
     int ch;
-    OptStruct opts;
-    
-    // Set defaults
-    opts.delay = 0.25;  // Delay in seconds
+    OptStruct opts = newOptStructInst();
     
     static struct option longopts[] = {
         {"delay",  required_argument, NULL, 't'},
@@ -126,10 +129,11 @@ OptStruct argParser(int argc, char **argv){
     while ((ch = getopt_long(argc, argv, "tdh:" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
-                opts.delay = atof(optarg);
+                // Delay between frames in 1/100 sec
+                opts.gifopts.delay = (uint16_t) (100*atof(optarg));
                 break;
             case 'd':
-                opts.dither = 1;
+                opts.gifopts.dither = 1;
                 break;
             case 'h':
             case '?':
@@ -141,7 +145,6 @@ OptStruct argParser(int argc, char **argv){
     
     opts.fileind = optind;
     opts.nfile = argc - optind;
-    printf("fileInd=%i, nfile=%d, delay=%f\n", opts.fileind, opts.nfile, opts.delay);
     
     if(opts.nfile < 1){
         printf("%s: At least one input file required. Exiting.\n", argv[0]);

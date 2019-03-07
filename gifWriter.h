@@ -9,8 +9,10 @@
 typedef struct _GIFOptStruct {
     uint16_t delay;
     int dither;
+    int tablebitsize;
 } GIFOptStruct;
 
+GIFOptStruct newGIFOptStructInst();
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts);
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);
 uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);

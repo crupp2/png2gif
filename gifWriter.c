@@ -9,6 +9,17 @@
 #define DEBUG 0
 
 
+GIFOptStruct newGIFOptStructInst(){
+    // Set defaults
+    GIFOptStruct gifopts;
+    
+    gifopts.delay = 25;
+    gifopts.dither = 0;
+    gifopts.tablebitsize = 8;
+    
+    return gifopts;
+}
+
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts){
 
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
