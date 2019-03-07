@@ -358,6 +358,10 @@ int comparefcn_frameind(const void* first, const void* second){
     return ((SortedPixel*)first)->frameindex - ((SortedPixel*)second)->frameindex;
 }
 
+int comparefcn_colorind(const void* first, const void* second){
+    return ((SortedPixel*)first)->colorindex - ((SortedPixel*)second)->colorindex;
+}
+
 uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
     
     SortedPixel* buffer;// = malloc(sizeof(SortedPixel)*npixel);
@@ -486,7 +490,32 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     // Dither the image based on the smaller color pallete
     if(gifopts.dither > 0){
         // Compress unique down to the color table size to speed up dithering
-        //TODO
+#if DEBUG
+        printf("nunique=%i\n", nunique);
+#endif
+        // First sort unique by colorindex
+        qsort((void*)unique, nunique, sizeof(SortedPixel), comparefcn_colorind);
+        
+        // Now compress unique
+        int count = 0;
+        for(int i=1;i<nunique;i++){
+            if(unique[i].colorindex == unique[count].colorindex){
+                continue;
+            }else{
+                count++;
+                unique[count] = unique[i];
+            }
+        }
+        nunique = count+1;
+        
+        // Make sure that the updated nunique is the size of the color table or less
+#if DEBUG
+        printf("nunique=%i\n", nunique);
+#endif
+        if(nunique > tablesize){
+            printf("Error in preprocessing for dithering. Exiting.\n");
+            exit(-1);
+        }
         
         // Do the dithering
         printf("Dithering the frame\n");
