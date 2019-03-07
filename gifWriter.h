@@ -5,9 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay);
-void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
-uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
+
+typedef struct _GIFOptStruct {
+    uint16_t delay;
+    int dither;
+} GIFOptStruct;
+
+void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts);
+void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);
+uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);
 void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, int tablebitsize);
 void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 void writeGIFImageUncompressed256(FILE* fid, uint8_t* frame, uint32_t length);

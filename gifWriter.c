@@ -9,7 +9,7 @@
 #define DEBUG 0
 
 
-void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay){
+void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts){
 
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
     
@@ -35,13 +35,13 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, uint16_t delay){
     // Write graphics controls extension block
     fwrite("\x21\xF9\x04\x04", 4, 1, fid);  // Not using a transparent background
     // Write delay time
-    fwrite(&delay, sizeof(uint16_t), 1, fid);
+    fwrite(&gifopts.delay, sizeof(uint16_t), 1, fid);
     // Finish off the block
     fwrite("\x00\x00", 2, 1, fid);
     
 }
 
-void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
+void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
 
 #if DEBUG
     printf("Writing gif local image descriptor\n");
@@ -59,7 +59,7 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
     // Wait to write the packed byte until after we know the minimum table size
     
     // Write local color table
-    int tablebitsize = writeGIFLCT(fid, frame, width, height);
+    int tablebitsize = writeGIFLCT(fid, frame, width, height, gifopts);
     
     // Write image data
     printf("Writing gif frame data\n");
@@ -347,7 +347,7 @@ int comparefcn_frameind(const void* first, const void* second){
     return ((SortedPixel*)first)->frameindex - ((SortedPixel*)second)->frameindex;
 }
 
-uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height){
+uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
     
     SortedPixel* buffer;// = malloc(sizeof(SortedPixel)*npixel);
     SortedPixel* unique;//[npixel];
@@ -473,13 +473,24 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height)
     qsort((void*)bufferptr, npixel, sizeof(SortedPixel), comparefcn_frameind);
     
     // Dither the image based on the smaller color pallete
-    dither(unique, nunique, buffer, width, height);
+    if(gifopts.dither > 0){
+        // Compress unique down to the color table size to speed up dithering
+        //TODO
+        
+        // Do the dithering
+        printf("Dithering the frame\n");
+        dither(unique, nunique, buffer, width, height);
+    }
     
     // Store image indices in frame
     frameptr = frame;
     for(int i=0;i<npixel;i++){
         *frameptr++ = buffer[i].colorindex;
     }
+    
+    // Free allocated variables
+    free(unique);
+    free(buffer);
     
     // Return the size of the color table in number of bits
     return tablebitsize;

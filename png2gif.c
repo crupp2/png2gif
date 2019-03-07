@@ -12,6 +12,7 @@ typedef struct _OptStruct {
     int fileind;
     int nfile;
     float delay;
+    int dither;
 } OptStruct;
 
 OptStruct argParser(int argc, char **argv);
@@ -24,10 +25,12 @@ int main (int argc, char **argv) {
     int pngfileind;
     uint8_t* frame=NULL;
     PNGHeader header;
+    GIFOptStruct gifopts;
     
     OptStruct opts = argParser(argc, argv);
     
-    uint16_t delay = (uint16_t) (opts.delay*100);  // Delay between frames in 1/100 sec
+    gifopts.delay = (uint16_t) (opts.delay*100);  // Delay between frames in 1/100 sec
+    gifopts.dither = opts.dither;
     
     // If only one file then use same basename for .gif
     strcpy(giffilename, argv[opts.fileind]);
@@ -81,11 +84,11 @@ int main (int argc, char **argv) {
         
         // If just starting then write the gif header
         if(ftell(fidgif) == 0){
-            writeGIFHeader(fidgif, header.Width, header.Height, delay);
+            writeGIFHeader(fidgif, header.Width, header.Height, gifopts);
         }
         
         // Write frame to gif
-        writeGIFFrame(fidgif, frame, header.Width, header.Height);
+        writeGIFFrame(fidgif, frame, header.Width, header.Height, gifopts);
         
         fclose(fid);
     }
@@ -115,14 +118,18 @@ OptStruct argParser(int argc, char **argv){
     opts.delay = 0.25;  // Delay in seconds
     
     static struct option longopts[] = {
-        {"delay", required_argument, NULL, 't'},
-        {"help",  no_argument,       NULL, 'h'}
+        {"delay",  required_argument, NULL, 't'},
+        {"dither", no_argument,       NULL, 'd'},
+        {"help",   no_argument,       NULL, 'h'}
     };
 
-    while ((ch = getopt_long(argc, argv, "ht:" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(argc, argv, "tdh:" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 opts.delay = atof(optarg);
+                break;
+            case 'd':
+                opts.dither = 1;
                 break;
             case 'h':
             case '?':
