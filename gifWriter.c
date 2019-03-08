@@ -15,7 +15,7 @@ GIFOptStruct newGIFOptStructInst(){
     
     gifopts.delay = 25;
     gifopts.dither = 0;
-    gifopts.tablebitsize = 8;
+    gifopts.colortablebitsize = 0;
     
     return gifopts;
 }
@@ -429,17 +429,25 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     // This can either be set externally or programmatically found by the number of unique entries
     int tablebitsize = 1;
     int tablesize = 1 << tablebitsize;
-    while(nunique > tablesize){
-        if(tablebitsize >= 8){
-            break;
+    if(gifopts.colortablebitsize > 0){
+        if(gifopts.colortablebitsize > 8){
+            printf("Error: too many defined colors using colortablebitsize=%i. Value must be 1 <= x <= 8. Exiting.\n", gifopts.colortablebitsize);
         }
-        tablebitsize++;
-        tablesize = 1 << tablebitsize;
+        tablebitsize = gifopts.colortablebitsize;
+    }else{
+        while(nunique > tablesize){
+            if(tablebitsize >= 8){
+                break;
+            }
+            tablebitsize++;
+            tablesize = 1 << tablebitsize;
+        }
     }
-#if DEBUG
+    tablesize = 1 << tablebitsize;
+//#if DEBUG
     printf("tablesize=%i\n",tablesize);
     printf("tablebitsize=%i\n",tablebitsize);
-#endif
+//#endif
     
     // Write packed byte of the local image descriptor before writing the local color table
     // Need to do this here because we only just found the minimum size of the table
