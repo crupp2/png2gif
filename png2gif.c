@@ -36,6 +36,8 @@ int main (int argc, char **argv) {
     uint8_t* frame=NULL;
     PNGHeader header;
     
+    printf("Starting conversion of PNG file(s) to GIF file.\n");
+    
     OptStruct opts = argParser(argc, argv);
     
     // If only one file then use same basename for .gif
@@ -108,6 +110,8 @@ int main (int argc, char **argv) {
     // Free frame memory
     free(frame);
     
+    printf("Finished!\n\n");
+    
     return(0);
 }
 
@@ -121,19 +125,29 @@ OptStruct argParser(int argc, char **argv){
     OptStruct opts = newOptStructInst();
     
     static struct option longopts[] = {
-        {"delay",  required_argument, NULL, 't'},
-        {"dither", no_argument,       NULL, 'd'},
-        {"help",   no_argument,       NULL, 'h'}
+        {"timedelay",  required_argument, NULL, 't'},
+        {"dither",     no_argument,       NULL, 'd'},
+        {"ncolorbits", required_argument, NULL, 'n'},
+        {"help",       no_argument,       NULL, 'h'},
+        {NULL,         0,                 NULL, 0  }
     };
-
-    while ((ch = getopt_long(argc, argv, "tdh:" ,longopts, NULL)) != -1){
+    
+    printf("Options selected:\n");
+    while ((ch = getopt_long(argc, argv, "t:dn:h" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
                 opts.gifopts.delay = (uint16_t) (100*atof(optarg));
+                printf(" Using %i ms between frames\n", opts.gifopts.delay);
                 break;
             case 'd':
                 opts.gifopts.dither = 1;
+                printf(" Dithering will be performed.\n");
+                break;
+            case 'n':
+                opts.gifopts.colortablebitsize = atoi(optarg);
+                int ncolors = 1 << opts.gifopts.colortablebitsize;
+                printf(" Color table size will be %i colors.\n", ncolors);
                 break;
             case 'h':
             case '?':

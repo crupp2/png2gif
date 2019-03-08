@@ -444,10 +444,10 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
         }
     }
     tablesize = 1 << tablebitsize;
-//#if DEBUG
+#if DEBUG
     printf("tablesize=%i\n",tablesize);
     printf("tablebitsize=%i\n",tablebitsize);
-//#endif
+#endif
     
     // Write packed byte of the local image descriptor before writing the local color table
     // Need to do this here because we only just found the minimum size of the table
