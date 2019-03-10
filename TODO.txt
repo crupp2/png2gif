@@ -1,11 +1,13 @@
 x-GIF convert 9-bit LZW codes to bytes (uncompressed)
 x-GIF handle arbitrary LZW start code size
 x-GIF convert n-bit LZW codes to bytes (compressed)
--Force 0x00 and 0xFF in color table
+x-Force 0x00 and 0xFF in color table
 x-Dithering
 x-Add nodither command line option
 x-Add maxcolortablesize command line option
--Multiple PNGs to animated GIF
+x-Multiple PNGs to animated GIF
+-Add transparent pixel
+-Do animations with transparent pixel
 -Implement zlib-lite decompressor
 x-Implement reading PNG Truecolor+alpha
 x-Identify PNG reader limitations (possibly fix, add error messages for unsupported features. e.g., pallete, color options)
