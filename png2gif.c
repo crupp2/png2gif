@@ -128,12 +128,13 @@ OptStruct argParser(int argc, char **argv){
         {"timedelay",  required_argument, NULL, 't'},
         {"dither",     no_argument,       NULL, 'd'},
         {"ncolorbits", required_argument, NULL, 'n'},
+        {"forcebw",    no_argument,       NULL, 'f'},
         {"help",       no_argument,       NULL, 'h'},
         {NULL,         0,                 NULL, 0  }
     };
     
     printf("Options selected:\n");
-    while ((ch = getopt_long(argc, argv, "t:dn:h" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(argc, argv, "t:dn:fh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
@@ -148,6 +149,10 @@ OptStruct argParser(int argc, char **argv){
                 opts.gifopts.colortablebitsize = atoi(optarg);
                 int ncolors = 1 << opts.gifopts.colortablebitsize;
                 printf(" Color table size will be %i colors.\n", ncolors);
+                break;
+            case 'f':
+                opts.gifopts.forcebw = 1;
+                printf(" Black and white colors will be forced.\n");
                 break;
             case 'h':
             case '?':

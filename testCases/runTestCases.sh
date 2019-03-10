@@ -9,5 +9,5 @@
 # Test dithering
 ../png2gif file1c_dither.gif file1c.png -d
 
-# Test ncolorbits
-../png2gif file1f_full_dither.gif -n 1 file1f_full.png -d
+# Test ncolorbits and forcebw
+../png2gif file1f_full_dither.gif -n 1 file1f_full.png -d -f

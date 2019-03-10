@@ -10,6 +10,7 @@ typedef struct _GIFOptStruct {
     uint16_t delay;
     int dither;
     int colortablebitsize;
+    int forcebw;
 } GIFOptStruct;
 
 GIFOptStruct newGIFOptStructInst();

@@ -16,6 +16,7 @@ GIFOptStruct newGIFOptStructInst(){
     gifopts.delay = 25;
     gifopts.dither = 0;
     gifopts.colortablebitsize = 0;
+    gifopts.forcebw = 0;
     
     return gifopts;
 }
@@ -141,7 +142,6 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
                ,widthjumps[8],widthjumps[9]);
 #endif
         
-//        if(ret <= 0 && islast == 0){
         if(inlen == 0){
             // End table with stop code
 #if DEBUG
@@ -172,12 +172,6 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
         // Reset
         bufferptr = buffer;
         ret = 0;
-        
-        // This mostly works, but is weird and causes a shift in the image. There was already a clear code for max-bits (i.e., 12), why do we need another for start-bits?
-//        buffer[0] = clearcode;
-//        ret++;
-//        ncodes++;
-//        bufferptr++;
     }
     
     // Write chunks of encoded bytes
@@ -458,6 +452,52 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     // Shrink the color pallete to an optimal set via median cut
     medianCut(unique, nunique, tablebitsize);
     
+    // If requested then force black and white to the color table
+    // Find the closest colors overwrite them
+    if(gifopts.forcebw > 0){
+#if DEBUG
+        printf("nunique=%i\n", nunique);
+        printf("tablebitsize=%i\n", tablebitsize);
+#endif
+        SortedPixel pix;
+        pix.residualR = 0;
+        pix.residualG = 0;
+        pix.residualB = 0;
+        uint32_t ind;
+        
+        // Find closest to black
+        pix.R = 0;
+        pix.G = 0;
+        pix.B = 0;
+        ind = findClosestColor(unique, nunique, pix);
+        uint8_t blackcolorindex = unique[ind].colorindex;
+        
+        // Find closest to white
+        pix.R = 0xff;
+        pix.G = 0xff;
+        pix.B = 0xff;
+        ind = findClosestColor(unique, nunique, pix);
+        uint8_t whitecolorindex = unique[ind].colorindex;
+        
+        // Now apply that color to all unique colors that have the same colorindex
+        for(int i=0;i<nunique;i++){
+            if(unique[i].colorindex == blackcolorindex){
+                unique[i].R = 0;
+                unique[i].G = 0;
+                unique[i].B = 0;
+                unique[i].pixel = 0;
+            }else if(unique[i].colorindex == whitecolorindex){
+                unique[i].R = 0xff;
+                unique[i].G = 0xff;
+                unique[i].B = 0xff;
+                unique[i].pixel = 0xffffff;
+            }
+        }
+        
+        // Need to resort unique into colorindex order in case findClosetColor messed it up
+        qsort((void*)unique, nunique, sizeof(SortedPixel), comparefcn_colorind);
+    }
+    
     // Write the color table
     // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
     frameptr = frame;
@@ -469,12 +509,15 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
             continue;
         }else{
 #if DEBUG
-            printf("#colors in bin: %i(%i)\n",unique[i].npixel,i);
+            printf("#pixels(#colors)[color] in bin: %i(%i)[%i]\n",unique[i].npixel,i,unique[i].pixel);
 #endif
             memcpy(frameptr, &(unique[i].pixel), 3);
             frameptr += 3;
         }
     }
+#if DEBUG
+    printf("#pixels(#colors)[color]  in bin: %i(%i)[%i]\n",unique[nunique-1].npixel,nunique,unique[nunique].pixel);
+#endif
     fwrite(frame, sizeof(uint8_t), 3*(1 << tablebitsize), fid);
     
     // Re-sort unique into sorted state, same as buffer still is

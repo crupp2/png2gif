@@ -25,18 +25,29 @@ void dither(SortedPixel* palette, int npalette, SortedPixel* frame, uint32_t wid
     SortedPixel oldpixel, newpixel;
     uint32_t ind;
     float errorR, errorG, errorB;
+    
+#if DEBUG
+    printf("npalette=%i\n",npalette);
+    printf("palette[0] RGB=0d{%i,%i,%i}\n", palette[0].R, palette[0].G, palette[0].B);
+    printf("palette[1] RGB=0d{%i,%i,%i}\n", palette[1].R, palette[1].G, palette[1].B);
+#endif
 
     for(uint32_t j=0; j<height; j++){
         for(uint32_t i=0; i<width; i++){
             
             // Get pixel
             oldpixel = frame[j*width+i];
+#if DEBUG
+            printf("Pixel colorRGB=0d{%i,%i,%i}\n", oldpixel.R, oldpixel.G, oldpixel.B);
+            printf("Pixel propagated colorRGB={%f,%f,%f}\n", oldpixel.residualR + (float)oldpixel.R, oldpixel.residualG + (float)oldpixel.G, oldpixel.residualB + (float)oldpixel.B);
+#endif
             
             // Find closest color
             ind = findClosestColor(palette, npalette, oldpixel);
             newpixel = palette[ind];
 #if DEBUG
             printf("dist=%f\n", newpixel.residualR);
+            printf("Selected pixel colorRGB=0d{%i,%i,%i}\n", newpixel.R, newpixel.G, newpixel.B);
 #endif
             
             // Get quantization error for each color
@@ -45,7 +56,8 @@ void dither(SortedPixel* palette, int npalette, SortedPixel* frame, uint32_t wid
             errorG = oldpixel.residualG + (float)oldpixel.G - (float)newpixel.G;
             errorB = oldpixel.residualB + (float)oldpixel.B - (float)newpixel.B;
 #if DEBUG
-            printf("errorRGB={%f,%f,%f}\n", errorR, errorG, errorB);
+            printf("Pixel errorRGB=0d{%i,%i,%i}\n", oldpixel.R - newpixel.R, oldpixel.G - newpixel.G, oldpixel.B - newpixel.B);
+            printf("Propagated errorRGB={%f,%f,%f}\n", errorR, errorG, errorB);
 #endif
             
             // Set pixel color to the closest color
@@ -110,7 +122,9 @@ uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel)
     // Store the distance in palette.residualR since it is not being used
     float dist;
     for(int i=0; i<npalette; i++){
-        dist = sqrt(powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2));
+        // Unnecessary to take the sqrt since it is equally applied to all entries
+//        dist = sqrt(powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2));
+        dist = powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2);
         palette[i].residualR = dist;
     }
     
