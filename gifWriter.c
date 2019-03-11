@@ -44,13 +44,6 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
     // Write global color table
     fwrite("\xFF\xFF\xFF\x00\x00\x00", 6, 1, fid);
     
-    // Write graphics controls extension block
-    fwrite("\x21\xF9\x04\x04", 4, 1, fid);  // Not using a transparent background
-    // Write delay time
-    fwrite(&gifopts.delay, sizeof(uint16_t), 1, fid);
-    // Finish off the block
-    fwrite("\x00\x00", 2, 1, fid);
-    
 }
 
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
@@ -59,6 +52,13 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, G
     printf("Writing gif local image descriptor\n");
     printf("width=%d, height=%d\n", width, height);
 #endif
+    
+    // Write graphics control extension block
+    fwrite("\x21\xF9\x04\x04", 4, 1, fid);  // Not using a transparent background
+    // Write delay time
+    fwrite(&gifopts.delay, sizeof(uint16_t), 1, fid);
+    // Finish off the block
+    fwrite("\x00\x00", 2, 1, fid);
     
     // Write local image descriptor
     fputc('\x2C', fid);
