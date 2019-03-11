@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2019 Cory Rupp
+ Copyright (c) 2019, Cory Rupp
  
  This code is released under the MIT License:
  
