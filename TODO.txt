@@ -14,7 +14,7 @@ x-Multiple PNGs to animated GIF
 x-Implement reading PNG Truecolor+alpha
 x-Identify PNG reader limitations (possibly fix, add error messages for unsupported features. e.g., pallete, color options)
 x-Create test cases
--Add license headers
+x-Add license headers
 -Upload to github
 -Create GUI for file selection
 -Distribute to ATA
