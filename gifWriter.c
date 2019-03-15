@@ -32,12 +32,16 @@
 #define DEBUG 0
 
 
+// Corresponds definition in gifWriter.h: enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray};
+const int _Palette_nbits[] = {8, 8, 8, 8, 0, 0};
+
 GIFOptStruct newGIFOptStructInst(){
     // Set defaults
     GIFOptStruct gifopts;
     
     gifopts.delay = 25;
     gifopts.dither = 0;
+    gifopts.colorpalette = P685g;
     gifopts.colortablebitsize = 0;
     gifopts.forcebw = 0;
     
@@ -444,20 +448,29 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     
     // Find the minimum table size
     // This can either be set externally or programmatically found by the number of unique entries
-    int tablebitsize = 1;
+    // Certain color palettes will dictate what this value is
+    int tablebitsize = _Palette_nbits[gifopts.colorpalette];
     int tablesize = 1 << tablebitsize;
-    if(gifopts.colortablebitsize > 0){
-        if(gifopts.colortablebitsize > 8){
-            printf("Error: too many defined colors using colortablebitsize=%i. Value must be 1 <= x <= 8. Exiting.\n", gifopts.colortablebitsize);
-        }
-        tablebitsize = gifopts.colortablebitsize;
-    }else{
-        while(nunique > tablesize){
-            if(tablebitsize >= 8){
-                break;
+    
+    // Find size programatically if necessary
+    if(tablebitsize == 0){
+        // Size defined on command line
+        if(gifopts.colortablebitsize > 0){
+            if(gifopts.colortablebitsize > 8){
+                printf("Error: too many defined colors using colortablebitsize=%i. Value must be 1 <= x <= 8. Exiting.\n", gifopts.colortablebitsize);
             }
-            tablebitsize++;
+            tablebitsize = gifopts.colortablebitsize;
+        }else{
+            // Find size programatically
+            tablebitsize = 1;
             tablesize = 1 << tablebitsize;
+            while(nunique > tablesize){
+                if(tablebitsize >= 8){
+                    break;
+                }
+                tablebitsize++;
+                tablesize = 1 << tablebitsize;
+            }
         }
     }
     tablesize = 1 << tablebitsize;

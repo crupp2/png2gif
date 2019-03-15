@@ -29,8 +29,12 @@
 #include <stdlib.h>
 
 
+// Set up an enum for the palettes and an array with the corresponding number of palette bits (0 if variable)
+enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray};
+
 typedef struct _GIFOptStruct {
     uint16_t delay;
+    enum _Palettes colorpalette;
     int dither;
     int colortablebitsize;
     int forcebw;

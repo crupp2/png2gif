@@ -139,7 +139,42 @@ int main (int argc, char **argv) {
 }
 
 void usage(char **argv){
-    printf("\nPNG to GIF converter.\n\n Usage: %s [-t <delay>] PNGfile1 [PNGfile2 ...]\n\n", argv[0]);
+    printf("\nPNG to GIF converter.\n\n Usage: %s [opts] PNGfile1 [PNGfile2 ...]\n", argv[0]);
+    printf(" opts:\n");
+    printf("  -t, --timedelay <delay>    Time delay between frames in seconds (float))\n");
+    printf("  -d, --dither               Turn on dithering\n");
+    printf("  -c, --colorpalette <name>  Number of color bits to use in the color palette\n");
+    printf("    Color palette options for <name>:\n");
+    printf("      685g    6-8-5 level RGB with 15 gray and 1 transparent (default)\n");
+    printf("      676g    6-7-6 level RGB with 3 gray and 1 transparent\n");
+    printf("      884     8-8-4 level RGB with 0 gray and 0 transparent\n");
+    printf("      web     6-6-6 level RGB, also known as the web palette\n");
+    printf("      median  Adaptive palette using the median Cut algorithm\n");
+    printf("      gray    Grayscale palette\n");
+    printf("  -n, --ncolorbits <nbits>   Number of color bits to use in the color palette\n");
+    printf("  -f, --forcebw              Force black and white into color palette\n");
+    printf("  -h, --help                 Print this help\n\n");
+}
+
+int checkPaletteOption(char* option){
+    
+    if(strcmp("685g", option) == 0){
+        return P685g;
+    }else if(strcmp("676g", option) == 0){
+        return P676g;
+    }else if(strcmp("884", option) == 0){
+        return P884;
+    }else if(strcmp("web", option) == 0){
+        return Pweb;
+    }else if(strcmp("median", option) == 0){
+        return Pmedian;
+    }else if(strcmp("gray", option) == 0){
+        return Pgray;
+    }else{
+        printf("Unknown color palette option %s. Exiting.\n", option);
+        exit(-1);
+    }
+    
 }
 
 OptStruct argParser(int argc, char **argv){
@@ -148,16 +183,17 @@ OptStruct argParser(int argc, char **argv){
     OptStruct opts = newOptStructInst();
     
     static struct option longopts[] = {
-        {"timedelay",  required_argument, NULL, 't'},
-        {"dither",     no_argument,       NULL, 'd'},
-        {"ncolorbits", required_argument, NULL, 'n'},
-        {"forcebw",    no_argument,       NULL, 'f'},
-        {"help",       no_argument,       NULL, 'h'},
-        {NULL,         0,                 NULL, 0  }
+        {"timedelay",    required_argument, NULL, 't'},
+        {"dither",       no_argument,       NULL, 'd'},
+        {"colorpalette", required_argument, NULL, 'c'},
+        {"ncolorbits",   required_argument, NULL, 'n'},
+        {"forcebw",      no_argument,       NULL, 'f'},
+        {"help",         no_argument,       NULL, 'h'},
+        {NULL,           0,                 NULL, 0  }
     };
     
     printf("Options selected:\n");
-    while ((ch = getopt_long(argc, argv, "t:dn:fh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(argc, argv, "t:dc:n:fh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
@@ -167,6 +203,10 @@ OptStruct argParser(int argc, char **argv){
             case 'd':
                 opts.gifopts.dither = 1;
                 printf(" Dithering will be performed.\n");
+                break;
+            case 'c':
+                opts.gifopts.colorpalette = checkPaletteOption(optarg);
+                printf(" Color palette %s will be used.\n", optarg);
                 break;
             case 'n':
                 opts.gifopts.colortablebitsize = atoi(optarg);
