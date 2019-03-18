@@ -12,7 +12,7 @@
 # Test ncolorbits and forcebw
 ../png2gif -c gray file1f_full_dither.gif -n 1 file1f_full.png -d -f
 
-# Test setting various color palettes
+# Test various color palettes
 #TODO
 
 # Test animation

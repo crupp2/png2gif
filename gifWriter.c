@@ -486,29 +486,39 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     fputc(packedbyte, fid);
     
     // Use selected color palette option
-    getColorPalette(unique, nunique, tablebitsize, gifopts);
+    SortedPixel palette[256];
+    getColorPalette(palette, unique, nunique, tablebitsize, gifopts);
     
-    // Write the color table
+    // Write the color palette
     // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
     frameptr = frame;
-    // Write first color
-    memcpy(frameptr, &(unique[0].pixel), 3);
-    frameptr += 3;
-    for(int i=1;i<nunique;i++){
-        if(unique[i].colorindex == unique[i-1].colorindex){
-            continue;
-        }else{
-#if DEBUG
-            printf("#pixels(#colors)[color] in bin: %i(%i)[%i]\n",unique[i].npixel,i,unique[i].pixel);
-#endif
-            memcpy(frameptr, &(unique[i].pixel), 3);
-            frameptr += 3;
-        }
+    for(int i=0;i<tablesize;i++){
+        memcpy(frameptr, &(palette[i].pixel), 3);
+        frameptr += 3;
     }
-#if DEBUG
-    printf("#pixels(#colors)[color]  in bin: %i(%i)[%i]\n",unique[nunique-1].npixel,nunique,unique[nunique].pixel);
-#endif
-    fwrite(frame, sizeof(uint8_t), 3*(1 << tablebitsize), fid);
+    fwrite(frame, sizeof(uint8_t), 3*tablesize, fid);
+    
+    
+    
+//    frameptr = frame;
+//    // Write first color
+//    memcpy(frameptr, &(unique[0].pixel), 3);
+//    frameptr += 3;
+//    for(int i=1;i<nunique;i++){
+//        if(unique[i].colorindex == unique[i-1].colorindex){
+//            continue;
+//        }else{
+//#if DEBUG
+//            printf("#pixels(#colors)[color] in bin: %i(%i)[%i]\n",unique[i].npixel,i,unique[i].pixel);
+//#endif
+//            memcpy(frameptr, &(unique[i].pixel), 3);
+//            frameptr += 3;
+//        }
+//    }
+//#if DEBUG
+//    printf("#pixels(#colors)[color]  in bin: %i(%i)[%i]\n",unique[nunique-1].npixel,nunique,unique[nunique].pixel);
+//#endif
+//    fwrite(frame, sizeof(uint8_t), 3*(1 << tablebitsize), fid);
     
     // Re-sort unique into sorted state, same as buffer still is
     bufferptr = unique;

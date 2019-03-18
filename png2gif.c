@@ -174,7 +174,6 @@ int checkPaletteOption(char* option){
         printf("Unknown color palette option %s. Exiting.\n", option);
         exit(-1);
     }
-    
 }
 
 OptStruct argParser(int argc, char **argv){

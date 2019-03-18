@@ -42,4 +42,6 @@ typedef struct _SortedPixel {
     float residualB;
 } SortedPixel;
 
+uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel);
+
 #endif

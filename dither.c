@@ -23,8 +23,6 @@
  */
 
 #include <stdio.h>
-#include <math.h>
-
 #include "dither.h"
 
 #define DEBUG 0
@@ -118,42 +116,4 @@ void dither(SortedPixel* palette, int npalette, SortedPixel* frame, uint32_t wid
         }  // for i
     }  // for j
     
-}
-
-int comparefcn_residualR(const void* first, const void* second){
-    float diff = ((SortedPixel*)first)->residualR - ((SortedPixel*)second)->residualR;
-    if(diff > 0){
-        return 1;
-    }else if(diff < 0){
-        return -1;
-    }else{
-        return 0;
-    }
-}
-
-uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel){
-    // Returns the color index of the color table color closest to the color of pixel
-    // This algorithm is crazy slow
-    
-    float R, G, B;
-    
-    R = (float)pixel.R + pixel.residualR;
-    G = (float)pixel.G + pixel.residualG;
-    B = (float)pixel.B + pixel.residualB;
-    
-    // Find the distance to all palette entries
-    // Store the distance in palette.residualR since it is not being used
-    float dist;
-    for(int i=0; i<npalette; i++){
-        // Unnecessary to take the sqrt since it is equally applied to all entries
-//        dist = sqrt(powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2));
-        dist = powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2);
-        palette[i].residualR = dist;
-    }
-    
-    // Sort the palette by the distance, which should all be >= 0
-    qsort((void*)palette, npalette, sizeof(SortedPixel), comparefcn_residualR);
-    
-    // After sorting, the closest pixel will always be the first
-    return 0;
 }

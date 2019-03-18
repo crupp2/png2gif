@@ -25,4 +25,4 @@
 #include "pixel.h"
 #include "gifWriter.h"
 
-void getColorPalette(SortedPixel* unique, uint32_t nunique, int tablebitsize, GIFOptStruct gifopts);
+void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, int tablebitsize, GIFOptStruct gifopts);
