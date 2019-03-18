@@ -27,16 +27,16 @@
 #include "pixel.h"
 
 
-int comparefcn_residualR(const void* first, const void* second){
-    float diff = ((SortedPixel*)first)->residualR - ((SortedPixel*)second)->residualR;
-    if(diff > 0){
-        return 1;
-    }else if(diff < 0){
-        return -1;
-    }else{
-        return 0;
-    }
-}
+//int comparefcn_residualR(const void* first, const void* second){
+//    float diff = ((SortedPixel*)first)->residualR - ((SortedPixel*)second)->residualR;
+//    if(diff > 0){
+//        return 1;
+//    }else if(diff < 0){
+//        return -1;
+//    }else{
+//        return 0;
+//    }
+//}
 
 uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel){
     // Returns the color index of the color table color closest to the color of pixel
@@ -50,17 +50,22 @@ uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel)
     
     // Find the distance to all palette entries
     // Store the distance in palette.residualR since it is not being used
-    float dist;
+    float dist, closestDist = 0x7fffffff;  // Initialize to max float
+    int closestIndex = 0;
     for(int i=0; i<npalette; i++){
         // Unnecessary to take the sqrt since it is equally applied to all entries
         //        dist = sqrt(powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2));
         dist = powf(R-(float)palette[i].R, 2) + powf(G-(float)palette[i].G, 2) + powf(B-(float)palette[i].B, 2);
-        palette[i].residualR = dist;
+//        palette[i].residualR = dist;
+        if(dist < closestDist){
+            closestDist = dist;
+            closestIndex = i;
+        }
     }
     
     // Sort the palette by the distance, which should all be >= 0
-    qsort((void*)palette, npalette, sizeof(SortedPixel), comparefcn_residualR);
+//    qsort((void*)palette, npalette, sizeof(SortedPixel), comparefcn_residualR);
     
     // After sorting, the closest pixel will always be the first
-    return 0;
+    return closestIndex;
 }

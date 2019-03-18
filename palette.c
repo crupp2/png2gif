@@ -28,30 +28,36 @@
 
 #define DEBUG 0
 
-int comparefcn_colorindex(const void* first, const void* second){
-    return ((SortedPixel*)first)->colorindex - ((SortedPixel*)second)->colorindex;
-}
+//int comparefcn_colorindex(const void* first, const void* second){
+//    return ((SortedPixel*)first)->colorindex - ((SortedPixel*)second)->colorindex;
+//}
 
 void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+    
+    SortedPixel* paletteptr;
     
     // Build palette
     uint8_t P1[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};
     uint8_t P2[4] = {0x00, 0x55, 0xaa, 0xff};
     
+    int count = 0;
+    paletteptr = palette;
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){
             for(int k=0;k<4;k++){
-                palette->pixel = (P1[i] << 16) + (P1[j] << 8) + (P2[k] << 0);
-                palette->R = P1[i];
-                palette->G = P1[j];
-                palette->B = P2[k];
-                palette->residualR = 0;
-                palette->residualG = 0;
-                palette->residualB = 0;
+                paletteptr->pixel = (P1[i] << 16) + (P1[j] << 8) + (P2[k] << 0);
+                paletteptr->R = P1[i];
+                paletteptr->G = P1[j];
+                paletteptr->B = P2[k];
+                paletteptr->residualR = 0;
+                paletteptr->residualG = 0;
+                paletteptr->residualB = 0;
+                paletteptr->colorindex = count;
 #if DEBUG
-                printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",palette->pixel,palette->R,palette->G,palette->B);
+                printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
 #endif
-                palette++;
+                paletteptr++;
+                count++;
             }
         }
     }
@@ -117,7 +123,7 @@ void doMedianCut(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, in
         }
         
         // Need to resort unique into colorindex order in case findClosetColor messed it up
-        qsort((void*)unique, nunique, sizeof(SortedPixel), comparefcn_colorindex);
+//        qsort((void*)unique, nunique, sizeof(SortedPixel), comparefcn_colorindex);
     }
 
     // Put colors into palette

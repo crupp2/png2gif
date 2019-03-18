@@ -486,7 +486,8 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     fputc(packedbyte, fid);
     
     // Use selected color palette option
-    SortedPixel palette[256];
+    SortedPixel* palette = malloc(sizeof(SortedPixel)*256);
+    memset(palette, 0, sizeof(SortedPixel)*256);
     getColorPalette(palette, unique, nunique, tablebitsize, gifopts);
     
     // Write the color palette
@@ -580,6 +581,7 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     }
     
     // Free allocated variables
+    free(palette);
     free(unique);
     free(buffer);
     
