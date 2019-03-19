@@ -29,21 +29,6 @@
 #define DEBUG 0
 
 
-void palettizeColors(SortedPixel* palette, int tablesize, SortedPixel* unique, uint32_t nunique){
-    
-    // Plod through unique and find the nearest pixel in the palette
-    int ind = findClosestColor(palette, tablesize, unique[0]);
-    unique[0].colorindex = ind;
-    for(int i=1;i<nunique;i++){
-        ind = findClosestColor(palette, tablesize, unique[i]);
-        unique[i].colorindex = ind;
-#if DEBUG
-        printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
-#endif
-    }
-}
-
-
 void getP685gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
     // 6-8-5 palette
     // 240 colors taken up by the color palette
@@ -97,8 +82,6 @@ void getP685gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
         paletteptr++;
         count++;
     }
-    
-    palettizeColors(palette, 256, unique, nunique);
 }
 
 
@@ -155,8 +138,6 @@ void getP676gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
         paletteptr++;
         count++;
     }
-    
-    palettizeColors(palette, 256, unique, nunique);
 }
 
 
@@ -192,8 +173,6 @@ void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
             }
         }
     }
-    
-    palettizeColors(palette, 256, unique, nunique);
 }
 
 
@@ -230,8 +209,6 @@ void getWebPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
             }
         }
     }
-    
-    palettizeColors(palette, 256, unique, nunique);
 }
 
 
@@ -358,8 +335,6 @@ void getGrayPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique,
     printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
     printf("tablesize=%i\n", tablesize);
 #endif
-    
-    palettizeColors(palette, tablesize, unique, nunique);
 }
 
 

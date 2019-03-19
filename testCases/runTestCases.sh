@@ -1,5 +1,5 @@
 # Convert single png frame to a single gif frame
-../png2gif -c gray -f file1b.png
+../png2gif -c gray file1b.png
 ../png2gif file1c.png --colorpalette median
 ../png2gif file1d.png -c median
 ../png2gif -t 0.25 file1e.png -c median

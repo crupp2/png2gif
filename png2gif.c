@@ -235,7 +235,7 @@ OptStruct argParser(int argc, char **argv){
     // If forcing black and white colors then we also force the medianCut palette to be used
     if(opts.gifopts.forcebw == 1){
         opts.gifopts.colorpalette = checkPaletteOption("median");
-        printf(" Forcing usage of median color palette due to forcebw flag.\n");
+        printf(" Forcing usage of \"median\" color palette due to forcebw flag.\n");
     }
     
     opts.fileind = optind;

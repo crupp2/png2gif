@@ -43,5 +43,6 @@ typedef struct _SortedPixel {
 } SortedPixel;
 
 uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel);
+void palettizeColors(SortedPixel* palette, int tablesize, SortedPixel* unique, uint32_t nunique);
 
 #endif

@@ -54,3 +54,18 @@ uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel)
     
     return closestIndex;
 }
+
+
+void palettizeColors(SortedPixel* palette, int tablesize, SortedPixel* unique, uint32_t nunique){
+    
+    // Plod through unique and find the nearest pixel in the palette
+    int ind = findClosestColor(palette, tablesize, unique[0]);
+    unique[0].colorindex = ind;
+    for(int i=1;i<nunique;i++){
+        ind = findClosestColor(palette, tablesize, unique[i]);
+        unique[i].colorindex = ind;
+#if DEBUG
+        printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
+#endif
+    }
+}

@@ -490,6 +490,12 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     memset(palette, 0, sizeof(SortedPixel)*256);
     getColorPalette(palette, unique, nunique, tablebitsize, gifopts);
     
+    // Palettize the unique colors
+    if(gifopts.colorpalette != Pmedian){
+        printf("tablesize=%i\n", tablesize);
+        palettizeColors(palette, tablesize, unique, nunique);
+    }
+    
     // Write the color palette
     // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
     frameptr = frame;
