@@ -27,17 +27,6 @@
 #include "pixel.h"
 
 
-//int comparefcn_residualR(const void* first, const void* second){
-//    float diff = ((SortedPixel*)first)->residualR - ((SortedPixel*)second)->residualR;
-//    if(diff > 0){
-//        return 1;
-//    }else if(diff < 0){
-//        return -1;
-//    }else{
-//        return 0;
-//    }
-//}
-
 uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel){
     // Returns the color index of the color table color closest to the color of pixel
     // This algorithm is crazy slow
@@ -63,9 +52,5 @@ uint32_t findClosestColor(SortedPixel* palette, int npalette, SortedPixel pixel)
         }
     }
     
-    // Sort the palette by the distance, which should all be >= 0
-//    qsort((void*)palette, npalette, sizeof(SortedPixel), comparefcn_residualR);
-    
-    // After sorting, the closest pixel will always be the first
     return closestIndex;
 }

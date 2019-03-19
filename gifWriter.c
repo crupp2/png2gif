@@ -499,28 +499,6 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     }
     fwrite(frame, sizeof(uint8_t), 3*tablesize, fid);
     
-    
-    
-//    frameptr = frame;
-//    // Write first color
-//    memcpy(frameptr, &(unique[0].pixel), 3);
-//    frameptr += 3;
-//    for(int i=1;i<nunique;i++){
-//        if(unique[i].colorindex == unique[i-1].colorindex){
-//            continue;
-//        }else{
-//#if DEBUG
-//            printf("#pixels(#colors)[color] in bin: %i(%i)[%i]\n",unique[i].npixel,i,unique[i].pixel);
-//#endif
-//            memcpy(frameptr, &(unique[i].pixel), 3);
-//            frameptr += 3;
-//        }
-//    }
-//#if DEBUG
-//    printf("#pixels(#colors)[color]  in bin: %i(%i)[%i]\n",unique[nunique-1].npixel,nunique,unique[nunique].pixel);
-//#endif
-//    fwrite(frame, sizeof(uint8_t), 3*(1 << tablebitsize), fid);
-    
     // Re-sort unique into sorted state, same as buffer still is
     bufferptr = unique;
     qsort((void*)bufferptr, nunique, sizeof(SortedPixel), comparefcn_sortind);

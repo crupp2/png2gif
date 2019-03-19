@@ -28,24 +28,20 @@
 
 #define DEBUG 0
 
-//int comparefcn_colorindex(const void* first, const void* second){
-//    return ((SortedPixel*)first)->colorindex - ((SortedPixel*)second)->colorindex;
-//}
-
 void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
     
     SortedPixel* paletteptr;
     
     // Build palette
-    uint8_t P1[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};
-    uint8_t P2[4] = {0x00, 0x55, 0xaa, 0xff};
+    uint8_t P1[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};   // R, G
+    uint8_t P2[4] = {0x00, 0x55, 0xaa, 0xff};                           // B
     
     int count = 0;
     paletteptr = palette;
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){
             for(int k=0;k<4;k++){
-                paletteptr->pixel = (P1[i] << 16) + (P1[j] << 8) + (P2[k] << 0);
+                paletteptr->pixel = (P2[k] << 16) + (P1[j] << 8) + (P1[i] << 0);
                 paletteptr->R = P1[i];
                 paletteptr->G = P1[j];
                 paletteptr->B = P2[k];
@@ -63,14 +59,18 @@ void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
     }
     
     // Plod through unique and find the nearest pixel in the palette
-    int ind;
+    int ind = findClosestColor(palette, 256, unique[0]);
+    unique[0].colorindex = ind;
     for(int i=0;i<nunique;i++){
-        ind = findClosestColor(palette, 256, unique[i]);
-        unique->colorindex = ind;
-#if DEBUG
-        printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
-#endif
-        unique++;
+        if(unique[i].colorindex == unique[i-1].colorindex){
+            continue;
+        }else{
+            ind = findClosestColor(palette, 256, unique[i]);
+            unique[i].colorindex = ind;
+    #if DEBUG
+            printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
+    #endif
+        }
     }
 }
 
@@ -121,9 +121,6 @@ void doMedianCut(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, in
                 unique[i].pixel = 0xffffff;
             }
         }
-        
-        // Need to resort unique into colorindex order in case findClosetColor messed it up
-//        qsort((void*)unique, nunique, sizeof(SortedPixel), comparefcn_colorindex);
     }
 
     // Put colors into palette
@@ -163,8 +160,8 @@ void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
         case P676g:
 //            break;
         case P884:
-//            get884Palette(palette, unique, nunique);
-//            break;
+            get884Palette(palette, unique, nunique);
+            break;
         case Pweb:
 //            break;
         case Pgray:
