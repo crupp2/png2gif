@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "pixel.h"
 
 
 // Set up an enum for the palettes and an array with the corresponding number of palette bits (0 if variable)
@@ -38,6 +39,7 @@ typedef struct _GIFOptStruct {
     int dither;
     int colortablebitsize;
     int forcebw;
+    SortedPixel* palette;  // This will eventually point to the palette
 } GIFOptStruct;
 
 GIFOptStruct newGIFOptStructInst();

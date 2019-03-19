@@ -29,7 +29,7 @@
 #define DEBUG 0
 
 
-void getP685gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+void getP685gPalette(SortedPixel* palette){
     // 6-8-5 palette
     // 240 colors taken up by the color palette
     // Gray range is used for 15 of the remaining entries
@@ -85,7 +85,7 @@ void getP685gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
 }
 
 
-void getP676gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+void getP676gPalette(SortedPixel* palette){
     // 6-7-6 palette
     // 252 colors taken up by the color palette
     // Gray range is used for 3 of the remaining entries
@@ -141,7 +141,7 @@ void getP676gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
 }
 
 
-void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+void get884Palette(SortedPixel* palette){
     // 8-8-4 palette
     // All 256 entries are occupied by the color palette
     
@@ -176,7 +176,7 @@ void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
 }
 
 
-void getWebPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+void getWebPalette(SortedPixel* palette){
     // 6-6-6 web palette
     // 216 entries are occupied by the color palette
     // The rest of the entries are ignored
@@ -342,16 +342,16 @@ void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
  
     switch(gifopts.colorpalette){
         case P685g:
-            getP685gPalette(palette, unique, nunique);
+            getP685gPalette(palette);
             break;
         case P676g:
-            getP676gPalette(palette, unique, nunique);
+            getP676gPalette(palette);
             break;
         case P884:
-            get884Palette(palette, unique, nunique);
+            get884Palette(palette);
             break;
         case Pweb:
-            getWebPalette(palette, unique, nunique);
+            getWebPalette(palette);
             break;
         case Pgray:
             getGrayPalette(palette, unique, nunique, tablebitsize);

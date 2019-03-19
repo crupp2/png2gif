@@ -6,7 +6,7 @@ x-Dithering
 x-Add nodither command line option
 x-Add maxcolortablesize command line option
 x-Multiple PNGs to animated GIF
--Refactor code to use global color table only (since we don't want the colors to change between animations frames, generally)
+x-Refactor code to use global color table only (since we don't want the colors to change between animations frames, generally)
 x-Add command line option to use standard color bar-based color table
 -Add transparent pixel
 -Do animations with transparent pixel to shrink file size

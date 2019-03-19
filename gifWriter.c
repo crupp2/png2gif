@@ -44,13 +44,33 @@ GIFOptStruct newGIFOptStructInst(){
     gifopts.colorpalette = P685g;
     gifopts.colortablebitsize = 0;
     gifopts.forcebw = 0;
+    gifopts.palette = malloc(sizeof(SortedPixel)*256);  // This leaks, but is used until program exit
+    memset(gifopts.palette, 0, sizeof(SortedPixel)*256);
     
     return gifopts;
+}
+
+// Write the color palette
+void writeColorPalette(FILE* fid, SortedPixel* palette, int tablesize){
+    // Put into a temporary array and then write to file in one big chunk
+    uint8_t frame[3*tablesize];
+    uint8_t* frameptr = frame;
+    for(int i=0;i<tablesize;i++){
+        memcpy(frameptr, &(palette[i].pixel), 3);
+        frameptr += 3;
+    }
+    fwrite(frame, sizeof(uint8_t), 3*tablesize, fid);
 }
 
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts){
 
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
+    
+//    // Allocate and initialize the palette if necessary
+//    if(gifopts.palette == NULL){
+//        palette = malloc(sizeof(SortedPixel)*256);
+//        memset(palette, 0, sizeof(SortedPixel)*256);
+//    }
     
     printf("Writing gif header\n");
     
@@ -64,13 +84,26 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
     uint16_t h = (uint16_t) height;
     fwrite(&h, sizeof(uint16_t), 1, fid);
     
-    fputc('\xF0', fid);  // global color table is size 6 (2 RGB colors)
-    fputc('\x00', fid);  // White background
-    fputc('\x00', fid);  // No pixel aspect ratio
-    
-    // Write global color table
-    fwrite("\xFF\xFF\xFF\x00\x00\x00", 6, 1, fid);
-    
+    // If using a global color table then create it and write it here
+    // Pmedian and Pgray do not do this because they are variable size
+//    if(gifopts.colorpalette != Pmedian && gifopts.colorpalette != Pgray){
+    if(_Palette_nbits[gifopts.colorpalette] != 0){
+        // Get the color palette
+        getColorPalette(gifopts.palette, NULL, 0, 8, gifopts);
+        
+        // Write the palette to the global color table
+        // Technically the table size doesn't have to be 256, this code should be fixed if a future table is not
+        fputc('\xF7', fid);  // global color table is size 768 (256 RGB colors)
+        fputc('\x00', fid);  // Background color is pixel #0
+        fputc('\x00', fid);  // No pixel aspect ratio
+        writeColorPalette(fid, gifopts.palette, 256);
+    }else{
+        // No global color table (well, only black and white are defined)
+        fputc('\xF0', fid);  // global color table is size 6 (2 RGB colors)
+        fputc('\x00', fid);  // White background
+        fputc('\x00', fid);  // No pixel aspect ratio
+        fwrite("\xFF\xFF\xFF\x00\x00\x00", 6, 1, fid);
+    }
 }
 
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
@@ -482,28 +515,29 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     // Write packed byte of the local image descriptor before writing the local color table
     // Need to do this here because we only just found the minimum size of the table
     // Note that the documentation at https://www.fileformat.info/format/gif/egff.htm is wrong and the packed byte for the local color table looks like the packed byte for the global color table
-    uint8_t packedbyte = (1 << 7) + (tablebitsize-1);
+    // Only use a local color table is using Pmedian or Pgray, otherwise set size to zero
+    uint8_t packedbyte;
+    if(_Palette_nbits[gifopts.colorpalette] == 0){
+        packedbyte = (1 << 7) + (tablebitsize-1);
+    }else{
+        packedbyte = 0x00;
+    }
     fputc(packedbyte, fid);
     
-    // Use selected color palette option
-    SortedPixel* palette = malloc(sizeof(SortedPixel)*256);
-    memset(palette, 0, sizeof(SortedPixel)*256);
-    getColorPalette(palette, unique, nunique, tablebitsize, gifopts);
+    // Get the color palette if not yet defined (i.e., for Pmedian or Pgray)
+    if(_Palette_nbits[gifopts.colorpalette] == 0){
+        getColorPalette(gifopts.palette, unique, nunique, tablebitsize, gifopts);
+    }
     
-    // Palettize the unique colors
+    // Palettize the unique colors (still do this for Pgray
     if(gifopts.colorpalette != Pmedian){
-        printf("tablesize=%i\n", tablesize);
-        palettizeColors(palette, tablesize, unique, nunique);
+        palettizeColors(gifopts.palette, tablesize, unique, nunique);
     }
     
-    // Write the color palette
-    // Copy the data to the frame variable first since it is otherwise just sitting around, then write as one chunk
-    frameptr = frame;
-    for(int i=0;i<tablesize;i++){
-        memcpy(frameptr, &(palette[i].pixel), 3);
-        frameptr += 3;
+    // Write the color palette (only if using Pmedian or Pgray)
+    if(_Palette_nbits[gifopts.colorpalette] == 0){
+        writeColorPalette(fid, gifopts.palette, tablesize);
     }
-    fwrite(frame, sizeof(uint8_t), 3*tablesize, fid);
     
     // Re-sort unique into sorted state, same as buffer still is
     bufferptr = unique;
@@ -565,7 +599,6 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     }
     
     // Free allocated variables
-    free(palette);
     free(unique);
     free(buffer);
     

@@ -13,7 +13,7 @@
 ../png2gif -c gray file1f_full_dither.gif -n 1 file1f_full.png -d -f
 
 # Test various color palettes
-#TODO
+../png2gif file1e_685g.gif file1e.png
 
 # Test animation
 cd movie
