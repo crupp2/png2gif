@@ -28,23 +28,48 @@
 
 #define DEBUG 0
 
-void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+
+void palettizeColors(SortedPixel* palette, int tablesize, SortedPixel* unique, uint32_t nunique){
+    
+    // Plod through unique and find the nearest pixel in the palette
+    int ind = findClosestColor(palette, tablesize, unique[0]);
+    unique[0].colorindex = ind;
+    for(int i=0;i<nunique;i++){
+        if(unique[i].colorindex == unique[i-1].colorindex){
+            continue;
+        }else{
+            ind = findClosestColor(palette, tablesize, unique[i]);
+            unique[i].colorindex = ind;
+#if DEBUG
+            printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
+#endif
+        }
+    }
+}
+
+
+void getP685gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+    // 6-8-5 palette
+    // 240 colors taken up by the color palette
+    // Gray range is used for 15 of the remaining entries
+    // The last entry is reserved for the transparent index
     
     SortedPixel* paletteptr;
     
     // Build palette
-    uint8_t P1[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};   // R, G
-    uint8_t P2[4] = {0x00, 0x55, 0xaa, 0xff};                           // B
+    uint8_t R[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    uint8_t G[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};
+    uint8_t B[5] = {0x00, 0x40, 0x80, 0xbf, 0xff};
     
     int count = 0;
     paletteptr = palette;
-    for(int i=0;i<8;i++){
-        for(int j=0;j<8;j++){
-            for(int k=0;k<4;k++){
-                paletteptr->pixel = (P2[k] << 16) + (P1[j] << 8) + (P1[i] << 0);
-                paletteptr->R = P1[i];
-                paletteptr->G = P1[j];
-                paletteptr->B = P2[k];
+    for(int i=0;i<6;i++){           // R
+        for(int j=0;j<8;j++){       // G
+            for(int k=0;k<5;k++){   // B
+                paletteptr->pixel = (B[k] << 16) + (G[j] << 8) + (R[i] << 0);
+                paletteptr->R = R[i];
+                paletteptr->G = G[j];
+                paletteptr->B = B[k];
                 paletteptr->residualR = 0;
                 paletteptr->residualG = 0;
                 paletteptr->residualB = 0;
@@ -58,21 +83,161 @@ void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
         }
     }
     
-    // Plod through unique and find the nearest pixel in the palette
-    int ind = findClosestColor(palette, 256, unique[0]);
-    unique[0].colorindex = ind;
-    for(int i=0;i<nunique;i++){
-        if(unique[i].colorindex == unique[i-1].colorindex){
-            continue;
-        }else{
-            ind = findClosestColor(palette, 256, unique[i]);
-            unique[i].colorindex = ind;
-    #if DEBUG
-            printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
-    #endif
+    // Insert evenly distributed grays
+    // Step by 0x10 (16) for 15 grays
+    for(int i=1;i<16;i++){
+        int value = 0x10*i;
+        paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
+        paletteptr->R = value;
+        paletteptr->G = value;
+        paletteptr->B = value;
+        paletteptr->residualR = 0;
+        paletteptr->residualG = 0;
+        paletteptr->residualB = 0;
+        paletteptr->colorindex = count;
+#if DEBUG
+        printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+        paletteptr++;
+        count++;
+    }
+    
+    palettizeColors(palette, 256, unique, nunique);
+}
+
+
+void getP676gPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+    // 6-7-6 palette
+    // 252 colors taken up by the color palette
+    // Gray range is used for 3 of the remaining entries
+    // The last entry is reserved for the transparent index
+    
+    SortedPixel* paletteptr;
+    
+    // Build palette
+    uint8_t R[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    uint8_t G[7] = {0x00, 0x2a, 0x55, 0x80, 0xaa, 0xd4, 0xff};
+    uint8_t B[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    
+    int count = 0;
+    paletteptr = palette;
+    for(int i=0;i<6;i++){           // R
+        for(int j=0;j<7;j++){       // G
+            for(int k=0;k<6;k++){   // B
+                paletteptr->pixel = (B[k] << 16) + (G[j] << 8) + (R[i] << 0);
+                paletteptr->R = R[i];
+                paletteptr->G = G[j];
+                paletteptr->B = B[k];
+                paletteptr->residualR = 0;
+                paletteptr->residualG = 0;
+                paletteptr->residualB = 0;
+                paletteptr->colorindex = count;
+#if DEBUG
+                printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+                paletteptr++;
+                count++;
+            }
         }
     }
+    
+    // Insert evenly distributed grays
+    // Step by 0x40 (64) for 3 grays
+    for(int i=1;i<16;i++){
+        int value = 0x40*i;
+        paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
+        paletteptr->R = value;
+        paletteptr->G = value;
+        paletteptr->B = value;
+        paletteptr->residualR = 0;
+        paletteptr->residualG = 0;
+        paletteptr->residualB = 0;
+        paletteptr->colorindex = count;
+#if DEBUG
+        printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+        paletteptr++;
+        count++;
+    }
+    
+    palettizeColors(palette, 256, unique, nunique);
 }
+
+
+void get884Palette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+    // 8-8-4 palette
+    // All 256 entries are occupied by the color palette
+    
+    SortedPixel* paletteptr;
+    
+    // Build palette
+    uint8_t R[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};
+    uint8_t G[8] = {0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff};
+    uint8_t B[4] = {0x00, 0x55, 0xaa, 0xff};
+    
+    int count = 0;
+    paletteptr = palette;
+    for(int i=0;i<8;i++){           // R
+        for(int j=0;j<8;j++){       // G
+            for(int k=0;k<4;k++){   // B
+                paletteptr->pixel = (B[k] << 16) + (G[j] << 8) + (R[i] << 0);
+                paletteptr->R = R[i];
+                paletteptr->G = G[j];
+                paletteptr->B = B[k];
+                paletteptr->residualR = 0;
+                paletteptr->residualG = 0;
+                paletteptr->residualB = 0;
+                paletteptr->colorindex = count;
+#if DEBUG
+                printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+                paletteptr++;
+                count++;
+            }
+        }
+    }
+    
+    palettizeColors(palette, 256, unique, nunique);
+}
+
+
+void getWebPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique){
+    // 6-6-6 web palette
+    // 216 entries are occupied by the color palette
+    // The rest of the entries are ignored
+    
+    SortedPixel* paletteptr;
+    
+    // Build palette
+    uint8_t R[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    uint8_t G[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    uint8_t B[6] = {0x00, 0x33, 0x66, 0x99, 0xcc, 0xff};
+    
+    int count = 0;
+    paletteptr = palette;
+    for(int i=0;i<6;i++){           // R
+        for(int j=0;j<6;j++){       // G
+            for(int k=0;k<6;k++){   // B
+                paletteptr->pixel = (B[k] << 16) + (G[j] << 8) + (R[i] << 0);
+                paletteptr->R = R[i];
+                paletteptr->G = G[j];
+                paletteptr->B = B[k];
+                paletteptr->residualR = 0;
+                paletteptr->residualG = 0;
+                paletteptr->residualB = 0;
+                paletteptr->colorindex = count;
+#if DEBUG
+                printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+                paletteptr++;
+                count++;
+            }
+        }
+    }
+    
+    palettizeColors(palette, 256, unique, nunique);
+}
+
 
 void doMedianCut(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, int tablebitsize, GIFOptStruct gifopts){
     
@@ -152,20 +317,60 @@ void doMedianCut(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, in
 }
 
 
+void getGrayPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, int tablebitsize){
+    // Gray palette
+    // All colors taken up by the color palette
+    // Number of colors depends on the table size
+    
+    SortedPixel* paletteptr;
+    
+    // Build palette
+    int tablesize = 1 << tablebitsize;
+    int tablejump = 0x100 >> tablebitsize;
+    int count = 0;
+    paletteptr = palette;
+    
+    // Insert evenly distributed grays
+    // Step by 0x100>>tablebitsize for 1<<tablebitsize grays
+    for(int i=0;i<tablesize;i++){
+        int value = tablejump*i;
+        paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
+        paletteptr->R = value;
+        paletteptr->G = value;
+        paletteptr->B = value;
+        paletteptr->residualR = 0;
+        paletteptr->residualG = 0;
+        paletteptr->residualB = 0;
+        paletteptr->colorindex = count;
+#if DEBUG
+        printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+        paletteptr++;
+        count++;
+    }
+    
+    palettizeColors(palette, tablesize, unique, nunique);
+}
+
+
 void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, int tablebitsize, GIFOptStruct gifopts){
  
     switch(gifopts.colorpalette){
         case P685g:
-//            break;
+            getP685gPalette(palette, unique, nunique);
+            break;
         case P676g:
-//            break;
+            getP676gPalette(palette, unique, nunique);
+            break;
         case P884:
             get884Palette(palette, unique, nunique);
             break;
         case Pweb:
-//            break;
+            getWebPalette(palette, unique, nunique);
+            break;
         case Pgray:
-//            break;
+            getGrayPalette(palette, unique, nunique, tablebitsize);
+            break;
         case Pmedian:
         default:
             doMedianCut(palette, unique, nunique, tablebitsize, gifopts);
