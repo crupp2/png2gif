@@ -59,7 +59,9 @@ int main (int argc, char **argv) {
     uint8_t* frame=NULL;
     PNGHeader header;
     
-    printf("Starting conversion of PNG file(s) to GIF file.\n");
+    if(argc > 1){
+        printf("Starting conversion of PNG file(s) to GIF file.\n");
+    }
     
     OptStruct opts = argParser(argc, argv);
     
@@ -139,19 +141,22 @@ int main (int argc, char **argv) {
 }
 
 void usage(char **argv){
-    printf("\nPNG to GIF converter.\n\n Usage: %s [opts] PNGfile1 [PNGfile2 ...]\n", argv[0]);
+    printf("\nPNG to GIF converter.\n\n");
+    printf("Usage: %s [opts] PNGfile1 [PNGfile2 ...]\n", argv[0]);
     printf(" opts:\n");
-    printf("  -t, --timedelay <delay>    Time delay between frames in seconds (float))\n");
+    printf("  -t, --timedelay <delay>    Time delay between frames in seconds (float)\n");
+    printf("                              (default=0.25)\n");
     printf("  -d, --dither               Turn on dithering\n");
-    printf("  -c, --colorpalette <name>  Number of color bits to use in the color palette\n");
-    printf("    Color palette options for <name>:\n");
+    printf("  -c, --colorpalette <name>  Set a specific color palette to be used.\n");
+    printf("     Color palette options for <name>:\n");
     printf("      685g    6-8-5 level RGB with 15 gray and 1 transparent (default)\n");
     printf("      676g    6-7-6 level RGB with 3 gray and 1 transparent\n");
     printf("      884     8-8-4 level RGB with 0 gray and 0 transparent\n");
-    printf("      web     6-6-6 level RGB, also known as the web palette\n");
-    printf("      median  Adaptive palette using the median Cut algorithm\n");
-    printf("      gray    Grayscale palette\n");
+    printf("      web     6-6-6 level RGB, also known as the web palette, no transparent\n");
+    printf("      median  Adaptive palette using the median cut algorithm, no transparent\n");
+    printf("      gray    Grayscale palette, size determined by -n flag\n");
     printf("  -n, --ncolorbits <nbits>   Number of color bits to use in the color palette\n");
+    printf("                              (default=8)\n");
     printf("  -f, --forcebw              Force black and white into color palette\n");
     printf("  -h, --help                 Print this help\n\n");
 }
@@ -191,7 +196,10 @@ OptStruct argParser(int argc, char **argv){
         {NULL,           0,                 NULL, 0  }
     };
     
-    printf("Options selected:\n");
+    if(argc > 1){
+        printf("Options selected:\n");
+    }
+    
     while ((ch = getopt_long(argc, argv, "t:dc:n:fh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
@@ -205,7 +213,7 @@ OptStruct argParser(int argc, char **argv){
                 break;
             case 'c':
                 opts.gifopts.colorpalette = checkPaletteOption(optarg);
-                printf(" Color palette %s will be used.\n", optarg);
+                printf(" Color palette \"%s\" will be used.\n", optarg);
                 break;
             case 'n':
                 opts.gifopts.colortablebitsize = atoi(optarg);
@@ -224,12 +232,18 @@ OptStruct argParser(int argc, char **argv){
         }
     }
     
+    // If forcing black and white colors then we also force the medianCut palette to be used
+    if(opts.gifopts.forcebw == 1){
+        opts.gifopts.colorpalette = checkPaletteOption("median");
+        printf(" Forcing usage of median color palette due to forcebw flag.\n");
+    }
+    
     opts.fileind = optind;
     opts.nfile = argc - optind;
     
     if(opts.nfile < 1){
-        printf("%s: At least one input file required. Exiting.\n", argv[0]);
-        exit(-1);
+        usage(argv);
+        exit(0);
     }
     
     // Make sure files exist and can be opened
