@@ -34,16 +34,12 @@ void palettizeColors(SortedPixel* palette, int tablesize, SortedPixel* unique, u
     // Plod through unique and find the nearest pixel in the palette
     int ind = findClosestColor(palette, tablesize, unique[0]);
     unique[0].colorindex = ind;
-    for(int i=0;i<nunique;i++){
-        if(unique[i].colorindex == unique[i-1].colorindex){
-            continue;
-        }else{
-            ind = findClosestColor(palette, tablesize, unique[i]);
-            unique[i].colorindex = ind;
+    for(int i=1;i<nunique;i++){
+        ind = findClosestColor(palette, tablesize, unique[i]);
+        unique[i].colorindex = ind;
 #if DEBUG
-            printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
+        printf("#pixels(color#)[color]{palette#} in bin: %i(%i)[0x%08x]{0x%08x}\n",unique[i].npixel,i,unique[i].pixel,ind);
 #endif
-        }
     }
 }
 
@@ -326,13 +322,13 @@ void getGrayPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique,
     
     // Build palette
     int tablesize = 1 << tablebitsize;
-    int tablejump = 0x100 >> tablebitsize;
+    int tablejump = 0x100 >> (tablebitsize-1);
     int count = 0;
     paletteptr = palette;
     
     // Insert evenly distributed grays
     // Step by 0x100>>tablebitsize for 1<<tablebitsize grays
-    for(int i=0;i<tablesize;i++){
+    for(int i=0;i<(tablesize-1);i++){
         int value = tablejump*i;
         paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
         paletteptr->R = value;
@@ -348,6 +344,20 @@ void getGrayPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique,
         paletteptr++;
         count++;
     }
+    
+    // Add white at the end
+    paletteptr->pixel = (0xff << 16) + (0xff << 8) + (0xff << 0);
+    paletteptr->R = 0xff;
+    paletteptr->G = 0xff;
+    paletteptr->B = 0xff;
+    paletteptr->residualR = 0;
+    paletteptr->residualG = 0;
+    paletteptr->residualB = 0;
+    paletteptr->colorindex = count;
+#if DEBUG
+    printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+    printf("tablesize=%i\n", tablesize);
+#endif
     
     palettizeColors(palette, tablesize, unique, nunique);
 }

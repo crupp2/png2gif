@@ -7,7 +7,7 @@ x-Add nodither command line option
 x-Add maxcolortablesize command line option
 x-Multiple PNGs to animated GIF
 -Refactor code to use global color table only (since we don't want the colors to change between animations frames, generally)
--Add command line option to use standard color bar-based color table
+x-Add command line option to use standard color bar-based color table
 -Add transparent pixel
 -Do animations with transparent pixel to shrink file size
 -Implement zlib-lite decompressor
@@ -17,4 +17,3 @@ x-Create test cases
 x-Add license headers
 -Upload to github
 -Create GUI for file selection
--Distribute to ATA
