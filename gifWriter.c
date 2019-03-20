@@ -107,11 +107,25 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, G
 #endif
     
     // Write graphics control extension block
-    fwrite("\x21\xF9\x04\x04", 4, 1, fid);  // Not using a transparent background
+    fwrite("\x21\xF9\x04", 3, 1, fid);
+    // Write the packed byte
+    // Set transparent color flag if palette has a transparent index
+    switch (gifopts.colorpalette){
+        case P685g:
+        case P676g:
+            fwrite("\x05", 1, 1, fid);
+            break;
+        default:
+            fwrite("\x04", 1, 1, fid);
+            break;
+    }
     // Write delay time
     fwrite(&gifopts.delay, sizeof(uint16_t), 1, fid);
-    // Finish off the block
-    fwrite("\x00\x00", 2, 1, fid);
+    // Write the transparent color index (always at 0xff)
+    // Setting this regardless because the transparent color flag determines whether it is used
+    fwrite("\xff", 1, 1, fid);
+    // Write the block terminator
+    fwrite("\x00", 1, 1, fid);
     
     // Write local image descriptor
     fputc('\x2C', fid);

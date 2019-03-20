@@ -154,7 +154,7 @@ void usage(char **argv){
     printf("      884     8-8-4 level RGB with 0 gray and 0 transparent\n");
     printf("      web     6-6-6 level RGB, also known as the web palette, no transparent\n");
     printf("      median  Adaptive palette using the median cut algorithm, no transparent\n");
-    printf("      gray    Grayscale palette, size determined by -n flag\n");
+    printf("      gray    Grayscale palette, no transparent, size determined by -n flag\n");
     printf("  -n, --ncolorbits <nbits>   Number of color bits to use in the color palette\n");
     printf("                              (default=8)\n");
     printf("  -f, --forcebw              Force black and white into color palette\n");
