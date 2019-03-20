@@ -66,12 +66,6 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
 
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
     
-//    // Allocate and initialize the palette if necessary
-//    if(gifopts.palette == NULL){
-//        palette = malloc(sizeof(SortedPixel)*256);
-//        memset(palette, 0, sizeof(SortedPixel)*256);
-//    }
-    
     printf("Writing gif header\n");
     
     // Write gif header
@@ -86,7 +80,6 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
     
     // If using a global color table then create it and write it here
     // Pmedian and Pgray do not do this because they are variable size
-//    if(gifopts.colorpalette != Pmedian && gifopts.colorpalette != Pgray){
     if(_Palette_nbits[gifopts.colorpalette] != 0){
         // Get the color palette
         getColorPalette(gifopts.palette, NULL, 0, 8, gifopts);

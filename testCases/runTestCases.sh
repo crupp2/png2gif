@@ -14,6 +14,7 @@
 
 # Test various color palettes
 ../png2gif file1e_685g.gif file1e.png
+../png2gif file1h.png
 
 # Test animation
 cd movie
