@@ -18,3 +18,4 @@ x-Add license headers
 x-Upload to github
 -Create GUI for file selection
 x-Attribute image files
+-Fix memory leaks

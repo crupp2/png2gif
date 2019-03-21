@@ -32,8 +32,9 @@
 #define DEBUG 0
 
 
-// Corresponds definition in gifWriter.h: enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray};
+// Corresponds to definition in gifWriter.h: enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray};
 const int _Palette_nbits[] = {8, 8, 8, 8, 0, 0};
+const int _Palette_size[] = {255, 255, 256, 216, 0, 0};
 
 GIFOptStruct newGIFOptStructInst(){
     // Set defaults
@@ -113,6 +114,7 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, G
     switch (gifopts.colorpalette){
         case P685g:
         case P676g:
+        case Pweb:
             fwrite("\x05", 1, 1, fid);
             break;
         default:
@@ -536,8 +538,12 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
         getColorPalette(gifopts.palette, unique, nunique, tablebitsize, gifopts);
     }
     
-    // Palettize the unique colors (still do this for Pgray
-    if(gifopts.colorpalette != Pmedian){
+    // Palettize the unique colors (except for Pmedian and Pgray)
+    if(_Palette_size[gifopts.colorpalette] != 0){
+        palettizeColors(gifopts.palette, _Palette_size[gifopts.colorpalette], unique, nunique);
+    }
+    // Special palettizing handling for Pgray
+    if(gifopts.colorpalette == Pgray){
         palettizeColors(gifopts.palette, tablesize, unique, nunique);
     }
     

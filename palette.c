@@ -179,6 +179,7 @@ void get884Palette(SortedPixel* palette){
 void getWebPalette(SortedPixel* palette){
     // 6-6-6 web palette
     // 216 entries are occupied by the color palette
+    // The last entry is reserved for the transparent index
     // The rest of the entries are ignored
     
     SortedPixel* paletteptr;
