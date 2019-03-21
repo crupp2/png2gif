@@ -15,6 +15,12 @@
 # Test various color palettes
 ../png2gif file1e_685g.gif file1e.png
 ../png2gif file1h.png
+../png2gif file1i_685g.gif file1i.png -c 685g
+../png2gif file1i_676g.gif file1i.png -c 676g
+../png2gif file1i_844.gif file1i.png -c 884
+../png2gif file1i_web.gif file1i.png -c web
+../png2gif file1i_median.gif file1i.png -c median
+../png2gif file1i_gray.gif file1i.png -c gray
 
 # Test animation
 cd movie
