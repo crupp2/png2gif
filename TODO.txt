@@ -17,4 +17,4 @@ x-Create test cases
 x-Add license headers
 x-Upload to github
 -Create GUI for file selection
--Attribute image files
+x-Attribute image files
