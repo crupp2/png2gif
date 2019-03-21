@@ -1,0 +1,44 @@
+Attribution for images used in test cases.
+
+file1a:
+https://commons.wikimedia.org/wiki/File:Newtons_cradle_animation_book_2.gif
+DemonDeLuxe (Dominique Toussaint) [CC BY-SA 3.0 (http://creativecommons.org/licenses/by-sa/3.0/)]
+GNU Free Documentation License, Version 1.2 or any later version published by the Free Software Foundation (https://commons.wikimedia.org/wiki/Commons:GNU_Free_Documentation_License,_version_1.2) and Creative Commons Attribution-Share Alike 3.0 Unported license (https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+Frames extracted and converted to a series of png files.
+
+file1b:
+https://commons.wikimedia.org/wiki/File:GifSample.gif
+public domain
+
+file1c:
+https://commons.wikimedia.org/wiki/File:Quilt_design_as_46x46_uncompressed_GIF.gif
+public domain
+
+file1d:
+https://commons.wikimedia.org/wiki/File:PNG-Gradient.png
+public domain
+
+file1e:
+https://commons.wikimedia.org/wiki/File:SmallFullColourGIF.gif
+GDallimore [CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0)]
+Creative Commons Attribution-Share Alike 3.0 Unported license (https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+First frame of gif converted to png.
+
+file1f:
+https://commons.wikimedia.org/wiki/File:Michelangelo%27s_David_-_Floyd-Steinberg.png
+public domain
+
+file1f_full:
+https://commons.wikimedia.org/wiki/File:Michelangelo%27s_David_-_63_grijswaarden.png
+public domain
+
+file1g: ??
+https://webstyleguide.com/wsg2/graphics/dither.html
+copyright © 2004 Lynch and Horton
+https://webstyleguide.com/wsg2/about/copyright.html
+
+file1h:
+https://commons.wikimedia.org/wiki/File:SmallRainbow3483Colours.png
+GDallimore [CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0)]
+Creative Commons Attribution-Share Alike 3.0 Unported license (https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+No changes made.
