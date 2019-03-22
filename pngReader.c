@@ -127,6 +127,9 @@ void readPNGFrame(FILE* fid, uint32_t width, uint32_t height, uint8_t* frame, ui
     
     // Defilter the frame
     defilterPNGFrame(width, height, frame, bytesPerPixel);
+    
+    // Free allocated memory
+    free(buffer);
 }
 
 void readPNGChunk(FILE* fid, PNGChunk *chunk){

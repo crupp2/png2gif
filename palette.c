@@ -122,7 +122,7 @@ void getP676gPalette(SortedPixel* palette){
     
     // Insert evenly distributed grays
     // Step by 0x40 (64) for 3 grays
-    for(int i=1;i<16;i++){
+    for(int i=1;i<=3;i++){
         int value = 0x40*i;
         paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
         paletteptr->R = value;
