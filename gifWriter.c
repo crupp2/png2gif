@@ -32,9 +32,9 @@
 #define DEBUG 0
 
 
-// Corresponds to definition in gifWriter.h: enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray};
-const int _Palette_nbits[] = {8, 8, 8, 8, 0, 0};
-const int _Palette_size[] = {255, 255, 256, 216, 0, 0};
+// Corresponds to definition in gifWriter.h: enum _Palettes {P685g, P676g, P884, Pweb, Pmedian, Pgray, PgrayT};
+const int _Palette_nbits[] = {8, 8, 8, 8, 0, 0, 8};
+const int _Palette_size[] = {255, 255, 256, 216, 0, 0, 255};
 
 GIFOptStruct newGIFOptStructInst(){
     // Set defaults
@@ -115,6 +115,7 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, G
         case P685g:
         case P676g:
         case Pweb:
+        case PgrayT:
             fwrite("\x05", 1, 1, fid);
             break;
         default:
@@ -171,7 +172,7 @@ void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t
     
     uint32_t widthjumps[10] = {0,0,0,0,0,0,0,0,0,0};  // Location in number of codes where code width increases by one (room for jumps from 2 to 12)
     uint16_t* buffer = malloc(sizeof(uint16_t)*length);  // frame size
-    uint8_t* output = malloc(sizeof(uint8_t)*length);    // frame size
+    uint8_t* output = malloc(sizeof(uint8_t)*2*length);    // Don't really know the final size after compression, so let's guess 2*npixel
     uint8_t* frameptr;
     uint16_t* bufferptr;
     uint8_t* outputptr;

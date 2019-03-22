@@ -339,6 +339,53 @@ void getGrayPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique,
 }
 
 
+void getGrayTPalette(SortedPixel* palette){
+    // Gray palette with one transparent index
+    // The missing gray color is 0x01
+    // The last entry is the transparent index
+    
+    SortedPixel* paletteptr;
+    
+    // Build palette
+    int count = 0;
+    paletteptr = palette;
+    
+    // Write 0x00 color
+    int value = 0x0;
+    paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
+    paletteptr->R = value;
+    paletteptr->G = value;
+    paletteptr->B = value;
+    paletteptr->residualR = 0;
+    paletteptr->residualG = 0;
+    paletteptr->residualB = 0;
+    paletteptr->colorindex = count;
+#if DEBUG
+    printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+    paletteptr++;
+    count++;
+    
+    // Write the rest of the palette
+    for(int i=2;i<256;i++){
+        value = 0x01*i;
+        paletteptr->pixel = (value << 16) + (value << 8) + (value << 0);
+        paletteptr->R = value;
+        paletteptr->G = value;
+        paletteptr->B = value;
+        paletteptr->residualR = 0;
+        paletteptr->residualG = 0;
+        paletteptr->residualB = 0;
+        paletteptr->colorindex = count;
+#if DEBUG
+        printf("palettecolor[RGB] in bin: 0x%08x[0x%02x,0x%02x,0x%02x]\n",paletteptr->pixel,paletteptr->R,paletteptr->G,paletteptr->B);
+#endif
+        paletteptr++;
+        count++;
+    }
+}
+
+
 void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique, int tablebitsize, GIFOptStruct gifopts){
  
     switch(gifopts.colorpalette){
@@ -356,6 +403,9 @@ void getColorPalette(SortedPixel* palette, SortedPixel* unique, uint32_t nunique
             break;
         case Pgray:
             getGrayPalette(palette, unique, nunique, tablebitsize);
+            break;
+        case PgrayT:
+            getGrayTPalette(palette);
             break;
         case Pmedian:
         default:

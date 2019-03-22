@@ -155,6 +155,7 @@ void usage(char **argv){
     printf("      web     6-6-6 level RGB, also known as the web palette, no transparent\n");
     printf("      median  Adaptive palette using the median cut algorithm, no transparent\n");
     printf("      gray    Grayscale palette, no transparent, size determined by -n flag\n");
+    printf("      grayT   Grayscale palette, with transparent, size determined by -n flag\n");
     printf("  -n, --ncolorbits <nbits>   Number of color bits to use in the color palette\n");
     printf("                              (default=8)\n");
     printf("  -f, --forcebw              Force black and white into color palette\n");
@@ -175,6 +176,8 @@ int checkPaletteOption(char* option){
         return Pmedian;
     }else if(strcmp("gray", option) == 0){
         return Pgray;
+    }else if(strcmp("grayT", option) == 0){
+        return PgrayT;
     }else{
         printf("Unknown color palette option %s. Exiting.\n", option);
         exit(-1);
