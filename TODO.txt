@@ -9,7 +9,7 @@ x-Multiple PNGs to animated GIF
 x-Refactor code to use global color table only (since we don't want the colors to change between animations frames, generally)
 x-Add command line option to use standard color bar-based color table
 x-Add transparent pixel
--Do animations with transparent pixel to shrink file size
+x-Do animations with transparent pixel to shrink file size
 -Implement zlib-lite decompressor
 x-Implement reading PNG Truecolor+alpha
 x-Identify PNG reader limitations (possibly fix, add error messages for unsupported features. e.g., pallete, color options)

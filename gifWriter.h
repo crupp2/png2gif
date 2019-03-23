@@ -44,8 +44,8 @@ typedef struct _GIFOptStruct {
 
 GIFOptStruct newGIFOptStructInst();
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts);
-void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);
-uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts);
+void writeGIFFrame(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width, uint32_t height, GIFOptStruct gifopts, int isFirstFrame);
+uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width, uint32_t height, GIFOptStruct gifopts, int isFirstFrame);
 void writeGIFImageCompressed(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, int tablebitsize);
 void writeGIFImageCompressed9bit(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height);
 void writeGIFImageUncompressed256(FILE* fid, uint8_t* frame, uint32_t length);

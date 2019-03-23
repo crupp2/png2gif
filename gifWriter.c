@@ -63,6 +63,17 @@ void writeColorPalette(FILE* fid, SortedPixel* palette, int tablesize){
     fwrite(frame, sizeof(uint8_t), 3*tablesize, fid);
 }
 
+// Set transparent indices
+void setTransparent(uint8_t* frame, uint8_t* lastframe, uint32_t npixel){
+    for(int i=0;i<npixel;i++){
+        if(*frame == *lastframe){
+            *frame = 0xff;  // This is the transparent index for all palettes
+        }
+        frame++;
+        lastframe++;
+    }
+}
+
 void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gifopts){
 
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
@@ -92,15 +103,15 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
         fputc('\x00', fid);  // No pixel aspect ratio
         writeColorPalette(fid, gifopts.palette, 256);
     }else{
-        // No global color table (well, only black and white are defined)
+        // No global color table (well, only black and white are defined, but we use a local color table so it doesn't matter)
         fputc('\xF0', fid);  // global color table is size 6 (2 RGB colors)
-        fputc('\x00', fid);  // White background
+        fputc('\x00', fid);  // Background color is pixel #0
         fputc('\x00', fid);  // No pixel aspect ratio
         fwrite("\xFF\xFF\xFF\x00\x00\x00", 6, 1, fid);
     }
 }
 
-void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
+void writeGIFFrame(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width, uint32_t height, GIFOptStruct gifopts, int isFirstFrame){
 
 #if DEBUG
     printf("Writing gif local image descriptor\n");
@@ -140,8 +151,8 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, G
     fwrite(&h, 2, 1, fid);
     // Wait to write the packed byte until after we know the minimum table size
     
-    // Write local color table
-    int tablebitsize = writeGIFLCT(fid, frame, width, height, gifopts);
+    // Write local color table (if necessary) and palettize the image
+    int tablebitsize = writeGIFLCT(fid, frame, lastframe, width, height, gifopts, isFirstFrame);
     
     // Write image data
     printf("Writing gif frame data\n");
@@ -426,7 +437,9 @@ int comparefcn_colorind(const void* first, const void* second){
     return ((SortedPixel*)first)->colorindex - ((SortedPixel*)second)->colorindex;
 }
 
-uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height, GIFOptStruct gifopts){
+uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width, uint32_t height, GIFOptStruct gifopts, int isFirstFrame){
+    // lastframe contains the indices from the previous frame after it has been run through this code
+    // For the first frame, lastframe has been initialized to zeros, so all indices are equal to the background color
     
     SortedPixel* buffer;// = malloc(sizeof(SortedPixel)*npixel);
     SortedPixel* unique;//[npixel];
@@ -610,6 +623,22 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint32_t width, uint32_t height,
     frameptr = frame;
     for(int i=0;i<npixel;i++){
         *frameptr++ = buffer[i].colorindex;
+    }
+    
+    // If using a palette with a transparent index, replace indices that are equal to the last frame with the transparent index
+    // Only do this if it is not the first frame
+    if(isFirstFrame == 0){
+        switch (gifopts.colorpalette){
+            case P685g:
+            case P676g:
+            case Pweb:
+            case PgrayT:
+                setTransparent(frame, lastframe, npixel);
+                break;
+            default:
+                // Do nothing
+                break;
+        }
     }
     
     // Free allocated variables

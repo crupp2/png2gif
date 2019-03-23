@@ -56,7 +56,12 @@ int main (int argc, char **argv) {
     FILE *fidgif;
     char giffilename[FILENAMESIZE];
     int pngfileind;
-    uint8_t* frame=NULL;
+    uint8_t* frame0=NULL;
+    uint8_t* frame1=NULL;
+    uint8_t* curframeptr=NULL;
+    uint8_t* lastframeptr=NULL;
+    int frameselect = 0;
+    int isFirstFrame = 1;
     PNGHeader header;
     
     if(argc > 1){
@@ -99,17 +104,33 @@ int main (int argc, char **argv) {
         }
         
         // Allocate memory for the frame if we are just starting
+        // Do this here because we only now know the frame size
         // Always support RGBA size, just in case
-        if(frame==NULL){
-            frame = malloc(sizeof(uint8_t)*4*header.Width*header.Height+header.Height);  // RBG bytes + png scanline filter bytes
-            memset(frame, 0, sizeof(uint8_t)*4*header.Width*header.Height);
+        if(frame0==NULL){
+            frame0 = malloc(sizeof(uint8_t)*4*header.Width*header.Height+header.Height);  // RBG bytes + png scanline filter bytes
+            memset(frame0, 0, sizeof(uint8_t)*4*header.Width*header.Height);
+            frame1 = malloc(sizeof(uint8_t)*4*header.Width*header.Height+header.Height);  // RBG bytes + png scanline filter bytes
+            memset(frame1, 0, sizeof(uint8_t)*4*header.Width*header.Height);
         }
         
-        // Get png frame in gif frame format
+        // Figure out which frame is the current and previous frame
+        if(frameselect == 0){
+            curframeptr = frame0;
+            lastframeptr = frame1;
+            // Update frameselect
+            frameselect = 1;
+        }else{
+            curframeptr = frame1;
+            lastframeptr = frame0;
+            // Update frameselect
+            frameselect = 0;
+        }
+        
+        // Get png frame in rgb raw format
         if(header.ColorType == 2){
-            readPNGFrame(fid, header.Width, header.Height, frame, 3);
+            readPNGFrame(fid, header.Width, header.Height, curframeptr, 3);
         }else if(header.ColorType == 6){
-            readPNGFrame(fid, header.Width, header.Height, frame, 4);
+            readPNGFrame(fid, header.Width, header.Height, curframeptr, 4);
         }else{
             printf("Error: Should never get here, unsupported PNG color type\n");
             return -1;
@@ -121,7 +142,8 @@ int main (int argc, char **argv) {
         }
         
         // Write frame to gif
-        writeGIFFrame(fidgif, frame, header.Width, header.Height, opts.gifopts);
+        writeGIFFrame(fidgif, curframeptr, lastframeptr, header.Width, header.Height, opts.gifopts, isFirstFrame);
+        isFirstFrame = 0;
         
         fclose(fid);
     }
@@ -133,7 +155,8 @@ int main (int argc, char **argv) {
     fclose(fidgif);
     
     // Free frame memory
-    free(frame);
+    free(frame1);
+    free(frame0);
     
     printf("Finished!\n\n");
     
