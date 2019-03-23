@@ -64,10 +64,6 @@ int main (int argc, char **argv) {
     int isFirstFrame = 1;
     PNGHeader header;
     
-    if(argc > 1){
-        printf("Starting conversion of PNG file(s) to GIF file.\n");
-    }
-    
     OptStruct opts = argParser(argc, argv);
     
     // If only one file then use same basename for .gif
@@ -182,6 +178,7 @@ void usage(char **argv){
     printf("  -n, --ncolorbits <nbits>   Number of color bits to use in the color palette\n");
     printf("                              (default=8)\n");
     printf("  -f, --forcebw              Force black and white into color palette\n");
+    printf("  -s, --silent               Silent mode\n");
     printf("  -h, --help                 Print this help\n\n");
 }
 
@@ -218,15 +215,32 @@ OptStruct argParser(int argc, char **argv){
         {"colorpalette", required_argument, NULL, 'c'},
         {"ncolorbits",   required_argument, NULL, 'n'},
         {"forcebw",      no_argument,       NULL, 'f'},
+        {"silent",       no_argument,       NULL, 's'},
         {"help",         no_argument,       NULL, 'h'},
         {NULL,           0,                 NULL, 0  }
     };
     
+    // First check for silent mode to ensure that we are indeed silent
+    while ((ch = getopt_long(argc, argv, "t:dc:n:fsh" ,longopts, NULL)) != -1){
+        switch(ch){
+            case 's':
+                // Set up silent mode
+                freopen("/dev/null", "w" ,stdout);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    // Reset optind for getopt
+    optind = 0;
+    
     if(argc > 1){
+        printf("Starting conversion of PNG file(s) to GIF file.\n");
         printf("Options selected:\n");
     }
     
-    while ((ch = getopt_long(argc, argv, "t:dc:n:fh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(argc, argv, "t:dc:n:fsh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
