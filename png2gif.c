@@ -24,11 +24,26 @@
 
 #include <string.h>
 #include <getopt.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+
+#include "tinyfiledialogs.h"
 
 #include "pngReader.h"
 #include "gifWriter.h"
 
-#define FILENAMESIZE 256
+#define MAX_ARG 256
+const char pathSeparator =
+#if defined(_WIN32) || defined(_WIN64)
+'\\';
+#else
+'/';
+#endif
 
 
 typedef struct _OptStruct {
@@ -48,13 +63,15 @@ OptStruct newOptStructInst(){
     return opts;
 }
 
-OptStruct argParser(int argc, char **argv);
+OptStruct argParser(int* argc, char ***argv);
+
+int startGUI(char **argv);
 
 
 int main (int argc, char **argv) {
     FILE *fid;
     FILE *fidgif;
-    char giffilename[FILENAMESIZE];
+    char giffilename[FILENAME_MAX];
     int pngfileind;
     uint8_t* frame0=NULL;
     uint8_t* frame1=NULL;
@@ -64,7 +81,8 @@ int main (int argc, char **argv) {
     int isFirstFrame = 1;
     PNGHeader header;
     
-    OptStruct opts = argParser(argc, argv);
+    // argParser will update where argc and argv point to, so need to pass in by reference
+    OptStruct opts = argParser(&argc, &argv);
     
     // If only one file then use same basename for .gif
     strcpy(giffilename, argv[opts.fileind]);
@@ -161,7 +179,8 @@ int main (int argc, char **argv) {
 
 void usage(char **argv){
     printf("\nPNG to GIF converter.\n\n");
-    printf("Usage: %s [opts] PNGfile1 [PNGfile2 ...]\n", argv[0]);
+    printf("Usage: %s [opts] [GIFfile] PNGfile1 [PNGfile2 ...]\n", argv[0]);
+    printf(" If GIFfile is omitted then it will be inferred by the name of PNGfile1.\n");
     printf(" opts:\n");
     printf("  -t, --timedelay <delay>    Time delay between frames in seconds (float)\n");
     printf("                              (default=0.25)\n");
@@ -204,8 +223,10 @@ int checkPaletteOption(char* option){
     }
 }
 
-OptStruct argParser(int argc, char **argv){
+OptStruct argParser(int* argc, char ***argv){
     
+    int narg = *argc;
+    char** args = *argv;
     int ch;
     OptStruct opts = newOptStructInst();
     
@@ -221,7 +242,7 @@ OptStruct argParser(int argc, char **argv){
     };
     
     // First check for silent mode to ensure that we are indeed silent
-    while ((ch = getopt_long(argc, argv, "t:dc:n:fsh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsh" ,longopts, NULL)) != -1){
         switch(ch){
             case 's':
                 // Set up silent mode
@@ -231,16 +252,26 @@ OptStruct argParser(int argc, char **argv){
                 break;
         }
     }
+
+    // Update argv if using a GUI
+    if(narg < 2){
+        // No arguments, use the GUI for file selection
+        // Need to allocate args here (this will leak, but we need it to since args can't be deallocated until sometime after exiting this function)
+        args = malloc(MAX_ARG * sizeof(char *)); // Allocate row pointers
+        for(int i = 0; i < MAX_ARG; i++){
+            args[i] = malloc(FILENAME_MAX * sizeof(char));
+        }
+        narg = startGUI(args);
+        *argc = narg;
+        *argv = args;
+    }
+    
+    printf("Starting conversion of PNG file(s) to GIF file.\n");
+    printf("Options selected:\n");
     
     // Reset optind for getopt
     optind = 0;
-    
-    if(argc > 1){
-        printf("Starting conversion of PNG file(s) to GIF file.\n");
-        printf("Options selected:\n");
-    }
-    
-    while ((ch = getopt_long(argc, argv, "t:dc:n:fsh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
@@ -267,7 +298,7 @@ OptStruct argParser(int argc, char **argv){
             case 'h':
             case '?':
             default:
-                usage(argv);
+                usage(*argv);
                 exit(0);
         }
     }
@@ -279,24 +310,24 @@ OptStruct argParser(int argc, char **argv){
     }
     
     opts.fileind = optind;
-    opts.nfile = argc - optind;
+    opts.nfile = narg - optind;
     
     if(opts.nfile < 1){
-        usage(argv);
+        usage(*argv);
         exit(0);
     }
     
     // Make sure files exist and can be opened
     // If the gif output file then it doesn't have to exist
-    for(int i=opts.fileind; i<argc; i++){
-        FILE* fid = fopen(argv[i], "r");
+    for(int i=opts.fileind; i<narg; i++){
+        FILE* fid = fopen(args[i], "r");
         
         if(fid == 0){
             // If first file and there is more than one file then it is a gif and can be missing
             if(i == opts.fileind && opts.nfile > 1){
                 continue;
             }
-            printf("%s: Cannot open file %s. Exiting\n", argv[0], argv[i]);
+            printf("%s: Cannot open file %s. Exiting\n", (*argv)[0], args[i]);
             exit(-1);
         }
         
@@ -304,4 +335,83 @@ OptStruct argParser(int argc, char **argv){
     }
 
     return opts;
+}
+
+int startGUI(char **args){
+    
+    char const * PNGfilt[2] = { "*.png", "*.*" };
+    char const * GIFfilt[2] = { "*.gif", "*.*" };
+    int count = 1;
+    
+    // Get cwd and add separator
+    char cwd[FILENAME_MAX];
+    GetCurrentDir(cwd, FILENAME_MAX);
+    sprintf(cwd, "%s%c", cwd, pathSeparator);
+    
+    // Open dialog for selecting PNG files
+    char const *pngfilenames = tinyfd_openFileDialog("Select PNG files to convert", cwd, 1, PNGfilt, "PNG files", 1);
+    if(pngfilenames == NULL){
+        // User cancel
+        exit(0);
+    }
+
+    // Get GIF filename
+    char const *giffilename = tinyfd_saveFileDialog("Save GIF file as...", cwd, 1, GIFfilt, "GIF files");
+    if(giffilename == NULL){
+        // User cancel
+        exit(0);
+    }
+    
+    // Display message box with argument details
+    // First, build the message string, building up argv along the way
+    char message[16384];
+    char buffer[16384];
+    strcpy(message, "Starting conversion of PNG file(s) to GIF file.\n\n");
+    
+    sprintf(message, "%sOutput file:\n  %s\n", message, giffilename);
+    strcpy(args[count], giffilename);
+    count++;
+    
+    strcat(message, "\nInput file(s):\n");
+    strcpy(buffer, pngfilenames);
+    char* tok = strtok(buffer, "|");
+    while(tok != NULL){
+        sprintf(message, "%s  %s\n", message, tok);
+        strcpy(args[count], tok);
+        tok = strtok(NULL, "|");
+        count++;
+    }
+    
+    // Query time delay between frames (only if more than one input file)
+    if(count > 3){
+        char const *timedelay = tinyfd_inputBox("Enter time delay", "Enter time delay between frames (in seconds)", "0.25");
+        if(timedelay == NULL){
+            // User cancel
+            exit(0);
+        }
+        sprintf(message, "%s\nTime delay: %s seconds\n", message, timedelay);
+        strcpy(args[count], "-t");
+        count++;
+        strcpy(args[count], timedelay);
+        count++;
+    }
+    
+    strcat(message, "\nOk to proceed?");
+    
+    int ret = tinyfd_messageBox("Ok to proceed?", message, "okcancel", "question", 1);
+    
+    if(ret != 0){
+        // User canceled
+        exit(0);
+    }
+    for(int i=0;i<count;i++){
+        printf("%s\n",args[i]);
+    }
+    
+    // Set up silent mode when using the GUI
+    freopen("/dev/null", "w" ,stdout);
+    
+    // Return narg
+    return count;
+    
 }

@@ -28,3 +28,4 @@ SOFTWARE.
 ## Third party licenses
 
 This software uses the zlib library, which is released under the zlib license.
+This software uses tinyfiledialogs, which is released under the zlib license.

@@ -11,6 +11,7 @@ it can be redistributed and/or modified under the terms of the [MIT License](htt
 Copyright (c) 2019, Cory Rupp
 
 This work uses the zlib library, which is released under the zlib license.
+This work uses tinyfiledialogs, which is released under the zlib license.
 
 ## Development
 
@@ -23,3 +24,4 @@ This project started with the naive assumption that "Oh, it is just a matter of 
 ## Acknowledgements
 
 This work uses the zlib library, which is released under the zlib license.
+This work uses tinyfiledialogs, which is released under the zlib license.
