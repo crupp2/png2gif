@@ -20,6 +20,3 @@ clang $CFLAGS -c -o medianCut.o medianCut.c
 clang $CFLAGS -c -o dither.o dither.c
 
 clang++ $CFLAGS -o png2gif.app png2gif.o pngReader.o gifWriter.o pixel.o palette.o medianCut.o dither.o libLZWlib.o tinyfiledialogs.o -lz
-
-clang -g -c -o LZWcompressTest.o LZWcompressTest.c
-clang++ -o lzwtest LZWcompressTest.o libLZWlib.o -lz
