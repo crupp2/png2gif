@@ -26,6 +26,7 @@
 #define _PIXEL_H_
 
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef struct _SortedPixel {
     uint32_t pixel;

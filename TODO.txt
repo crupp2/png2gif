@@ -1,8 +1,6 @@
 -Implement zlib-lite decompressor (to remove the last external library dependency)
--Port to Linux
 -Port to Windows
 -Create GUI for file selection
---Linux
 --Windows
 -Make release build
 --MacOS

@@ -1,0 +1,586 @@
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "gray" will be used.
+giffilename=file1b.gif
+pngfilename=file1b.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "median" will be used.
+giffilename=file1c.gif
+pngfilename=file1c.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "median" will be used.
+giffilename=file1d.gif
+pngfilename=file1d.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Using 25 ms between frames
+ Color palette "median" will be used.
+giffilename=file1e.gif
+pngfilename=file1e.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "gray" will be used.
+giffilename=file1f.gif
+pngfilename=file1f.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "gray" will be used.
+giffilename=file1g.gif
+pngfilename=file1g.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "median" will be used.
+ Dithering will be performed.
+giffilename=file1c_dither.gif
+pngfilename=file1c.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Dithering the frame
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "gray" will be used.
+ Color table size will be 2 colors.
+ Dithering will be performed.
+ Black and white colors will be forced.
+ Forcing usage of "median" color palette due to forcebw flag.
+giffilename=file1f_full_dither.gif
+pngfilename=file1f_full.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Dithering the frame
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+giffilename=file1e_685g.gif
+pngfilename=file1e.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+giffilename=file1h.gif
+pngfilename=file1h.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "685g" will be used.
+giffilename=file1i_685g.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "676g" will be used.
+giffilename=file1i_676g.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "884" will be used.
+giffilename=file1i_844.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "web" will be used.
+giffilename=file1i_web.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "median" will be used.
+giffilename=file1i_median.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "gray" will be used.
+giffilename=file1i_gray.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Color palette "grayT" will be used.
+giffilename=file1i_grayT.gif
+pngfilename=file1i.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Using 2 ms between frames
+ Color palette "median" will be used.
+giffilename=file1a.gif
+pngfilename=file1a_f-01.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-02.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-03.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-04.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-05.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-06.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-07.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-08.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-09.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-10.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-11.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-12.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-13.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-14.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-15.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-16.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-17.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-18.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-19.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-20.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-21.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-22.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-23.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-24.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-25.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-26.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-27.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-28.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-29.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-30.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-31.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-32.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-33.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-34.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-35.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-36.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+Finished!
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
+ Using 2 ms between frames
+ Color palette "grayT" will be used.
+giffilename=file1a_gray.gif
+pngfilename=file1a_f-01.png
+Reading PNG frame
+Defiltering png frame
+Writing gif header
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-02.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-03.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-04.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-05.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-06.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-07.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-08.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-09.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-10.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-11.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-12.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-13.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-14.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-15.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-16.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-17.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-18.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-19.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-20.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-21.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-22.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-23.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-24.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-25.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-26.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-27.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-28.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-29.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-30.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-31.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-32.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-33.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-34.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-35.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+pngfilename=file1a_f-36.png
+Reading PNG frame
+Defiltering png frame
+Writing gif frame data
+Writing compressed frame
+Finished!
+
