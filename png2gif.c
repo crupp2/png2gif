@@ -22,6 +22,8 @@
  SOFTWARE.
  */
 
+#define VERSION "0.1"
+
 #include <string.h>
 #include <getopt.h>
 #if defined(_WIN32) || defined(_WIN64)
@@ -198,6 +200,7 @@ void usage(char **argv){
     printf("                              (default=8)\n");
     printf("  -f, --forcebw              Force black and white into color palette\n");
     printf("  -s, --silent               Silent mode\n");
+    printf("  -v, --version              Print version number\n");
     printf("  -h, --help                 Print this help\n\n");
 }
 
@@ -228,6 +231,7 @@ OptStruct argParser(int* argc, char ***argv){
     int narg = *argc;
     char** args = *argv;
     int ch;
+    int printStartText = 1;
     OptStruct opts = newOptStructInst();
     
     static struct option longopts[] = {
@@ -237,16 +241,22 @@ OptStruct argParser(int* argc, char ***argv){
         {"ncolorbits",   required_argument, NULL, 'n'},
         {"forcebw",      no_argument,       NULL, 'f'},
         {"silent",       no_argument,       NULL, 's'},
+        {"version",      no_argument,       NULL, 'v'},
         {"help",         no_argument,       NULL, 'h'},
         {NULL,           0,                 NULL, 0  }
     };
     
     // First check for silent mode to ensure that we are indeed silent
-    while ((ch = getopt_long(narg, args, "t:dc:n:fsh" ,longopts, NULL)) != -1){
+    // Also check for -v or -h to avoid startup and option string printing
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsvh" ,longopts, NULL)) != -1){
         switch(ch){
             case 's':
                 // Set up silent mode
                 freopen("/dev/null", "w" ,stdout);
+                break;
+            case 'v':
+            case 'h':
+                printStartText = 0;
                 break;
             default:
                 break;
@@ -266,12 +276,14 @@ OptStruct argParser(int* argc, char ***argv){
         *argv = args;
     }
     
-    printf("Starting conversion of PNG file(s) to GIF file.\n");
-    printf("Options selected:\n");
+    if(printStartText > 0){
+        printf("Starting conversion of PNG file(s) to GIF file.\n");
+        printf("Options selected:\n");
+    }
     
     // Reset optind for getopt
     optind = 0;
-    while ((ch = getopt_long(narg, args, "t:dc:n:fsh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsvh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
@@ -295,6 +307,9 @@ OptStruct argParser(int* argc, char ***argv){
                 opts.gifopts.forcebw = 1;
                 printf(" Black and white colors will be forced.\n");
                 break;
+            case 'v':
+                printf("\n png2gif version %s\n", VERSION);
+                exit(0);
             case 'h':
             case '?':
             default:
@@ -350,6 +365,7 @@ int startGUI(char **args){
     
     // Open dialog for selecting PNG files
     char const *pngfilenames = tinyfd_openFileDialog("Select PNG files to convert", cwd, 1, PNGfilt, "PNG files", 1);
+    printf(pngfilenames);
     if(pngfilenames == NULL){
         // User cancel
         exit(0);
@@ -399,17 +415,28 @@ int startGUI(char **args){
     strcat(message, "\nOk to proceed?");
     
     int ret = tinyfd_messageBox("Ok to proceed?", message, "okcancel", "question", 1);
-    
+
+// Because Windows is stupid...
+#if defined(_WIN32) || defined(_WIN64)
+    if(ret == 0){
+#else
     if(ret != 0){
+#endif
         // User canceled
         exit(0);
     }
-    for(int i=0;i<count;i++){
+
+    // Print out equivalent command line options
+    for(int i=1;i<count;i++){
         printf("%s\n",args[i]);
     }
     
     // Set up silent mode when using the GUI
-    freopen("/dev/null", "w" ,stdout);
+#if defined(_WIN32) || defined(_WIN64)
+    freopen("NUL:", "w", stdout);
+#else
+    freopen("/dev/null", "w", stdout);
+#endif
     
     // Return narg
     return count;
