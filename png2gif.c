@@ -365,7 +365,6 @@ int startGUI(char **args){
     
     // Open dialog for selecting PNG files
     char const *pngfilenames = tinyfd_openFileDialog("Select PNG files to convert", cwd, 1, PNGfilt, "PNG files", 1);
-    printf(pngfilenames);
     if(pngfilenames == NULL){
         // User cancel
         exit(0);
