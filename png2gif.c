@@ -326,7 +326,7 @@ OptStruct argParser(int* argc, char ***argv){
                 printf(" Black and white colors will be forced.\n");
                 break;
             case 'v':
-                printf("\n png2gif version %s\n", VERSION);
+                printf("\n png2gif version %s\n\n", VERSION);
                 exit(0);
             case 'h':
             case '?':
