@@ -415,12 +415,7 @@ int startGUI(char **args){
     
     int ret = tinyfd_messageBox("Ok to proceed?", message, "okcancel", "question", 1);
 
-// Because Windows is stupid...
-#if defined(_WIN32) || defined(_WIN64)
     if(ret == 0){
-#else
-    if(ret != 0){
-#endif
         // User canceled
         exit(0);
     }
