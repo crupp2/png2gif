@@ -293,8 +293,8 @@ OptStruct argParser(int* argc, char ***argv){
         *argc = narg;
         *argv = args;
     }
-    
-    if(printStartText > 0){
+
+    if(printStartText > 0 && narg > 1){
         printf("Starting conversion of PNG file(s) to GIF file.\n");
         printf("Options selected:\n");
     }
