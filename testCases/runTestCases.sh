@@ -1,5 +1,5 @@
 # MacOS
-export PNG2GIF="../png2gif.app"
+export PNG2GIF="../png2gif"
 # Linux
 #export PNG2GIF="../png2gif"
 # Windows

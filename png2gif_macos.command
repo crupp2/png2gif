@@ -2,5 +2,5 @@
 
 FILEPATH=$(dirname $0)
 cd ~
-$FILEPATH/png2gif_macos -g
+$FILEPATH/png2gif -g
 

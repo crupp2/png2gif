@@ -19,12 +19,12 @@ clang $CFLAGS -c -o medianCut.o medianCut.c
 
 clang $CFLAGS -c -o dither.o dither.c
 
-clang++ $CFLAGS -o png2gif_macos png2gif.o pngReader.o gifWriter.o pixel.o palette.o medianCut.o dither.o libLZWlib.o tinyfiledialogs.o -lz
+clang++ $CFLAGS -o png2gif png2gif.o pngReader.o gifWriter.o pixel.o palette.o medianCut.o dither.o libLZWlib.o tinyfiledialogs.o -lz
 
 # Make an app
 rm -rf png2gif.app
 mkdir -p png2gif.app/Contents/{MacOS,Resources}
-cp png2gif_macos png2gif.app/Contents/MacOS/
+cp png2gif png2gif.app/Contents/MacOS/
 cp "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns" png2gif.app/Contents/Resources/png2gif.icns
 cp png2gif_macos.command png2gif.app/Contents/MacOS/
 chmod +x png2gif.app/Contents/MacOS
