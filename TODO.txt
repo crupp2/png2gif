@@ -1,7 +1,5 @@
 -Implement zlib-lite decompressor (to remove the last external library dependency)
--Port to Windows
--Create GUI for file selection
---Windows
+-Fix gif looping
 -Make release build
 --MacOS
 --Linux
