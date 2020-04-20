@@ -2,8 +2,6 @@
 export PNG2GIF="../png2gif"
 # Linux
 #export PNG2GIF="../png2gif"
-# Windows
-#set PNG2GIF="../png2gif.exe"
 
 # Convert single png frame to a single gif frame
 $PNG2GIF -c gray file1b.png > testcases.log
