@@ -28,6 +28,7 @@
 #include <getopt.h>
 #if defined(_WIN32) || defined(_WIN64)
 #include <direct.h>
+#include <windows.h>
 #define GetCurrentDir _getcwd
 #else
 #include <unistd.h>
@@ -232,7 +233,19 @@ OptStruct argParser(int* argc, char ***argv){
     char** args = *argv;
     int ch;
     int printStartText = 1;
+    int useGUI = 0;
     OptStruct opts = newOptStructInst();
+
+    // Because Windows is Windows, need to check to see if we are executing from the command line or from a double-click (see https://devblogs.microsoft.com/oldnewthing/20160125-00/?p=92922 except that you can't pass in nullptr or 0 to GetConsoleProcessList)
+    // For Windows if double-clicked then start from the GUI, otherwise start without the GUI unless requested
+#if defined(_WIN32) || defined(_WIN64)
+    LPDWORD lpdwProcessList[8];
+    DWORD nproc = GetConsoleProcessList(lpdwProcessList[0], 8);
+    if(nproc == 1){
+        // Started by double-click
+        useGUI = 1;
+    }
+#endif
     
     static struct option longopts[] = {
         {"timedelay",    required_argument, NULL, 't'},
@@ -241,6 +254,7 @@ OptStruct argParser(int* argc, char ***argv){
         {"ncolorbits",   required_argument, NULL, 'n'},
         {"forcebw",      no_argument,       NULL, 'f'},
         {"silent",       no_argument,       NULL, 's'},
+        {"usegui",       no_argument,       NULL, 'g'},
         {"version",      no_argument,       NULL, 'v'},
         {"help",         no_argument,       NULL, 'h'},
         {NULL,           0,                 NULL, 0  }
@@ -248,7 +262,8 @@ OptStruct argParser(int* argc, char ***argv){
     
     // First check for silent mode to ensure that we are indeed silent
     // Also check for -v or -h to avoid startup and option string printing
-    while ((ch = getopt_long(narg, args, "t:dc:n:fsvh" ,longopts, NULL)) != -1){
+    // Check for GUI flag as well
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsgvh" ,longopts, NULL)) != -1){
         switch(ch){
             case 's':
                 // Set up silent mode
@@ -258,14 +273,17 @@ OptStruct argParser(int* argc, char ***argv){
             case 'h':
                 printStartText = 0;
                 break;
+            case 'g':
+                useGUI = 1;
+                break;
             default:
                 break;
         }
     }
 
     // Update argv if using a GUI
-    if(narg < 2){
-        // No arguments, use the GUI for file selection
+    if(useGUI > 0){
+        // Use the GUI for file selection
         // Need to allocate args here (this will leak, but we need it to since args can't be deallocated until sometime after exiting this function)
         args = malloc(MAX_ARG * sizeof(char *)); // Allocate row pointers
         for(int i = 0; i < MAX_ARG; i++){
@@ -283,7 +301,7 @@ OptStruct argParser(int* argc, char ***argv){
     
     // Reset optind for getopt
     optind = 0;
-    while ((ch = getopt_long(narg, args, "t:dc:n:fsvh" ,longopts, NULL)) != -1){
+    while ((ch = getopt_long(narg, args, "t:dc:n:fsgvh" ,longopts, NULL)) != -1){
         switch(ch){
             case 't':
                 // Delay between frames in 1/100 sec
