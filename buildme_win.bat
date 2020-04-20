@@ -16,7 +16,7 @@ set CXXFLAGS=-std=c++0x -O3
 
 %CC% %CFLAGS% -c -o gifWriter.o gifWriter.c
 
-%CC% %CFLAGS% -c -o png2gif.o png2gif.c -I./tinyfiledialogs
+%CC% -c -o png2gif.o png2gif.c -I./tinyfiledialogs
 
 %CC% %CFLAGS% -c -o tinyfiledialogs.o tinyfiledialogs/tinyfiledialogs.c
 
