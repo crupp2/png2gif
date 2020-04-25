@@ -110,6 +110,12 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
         fwrite("\xFF\xFF\xFF\x00\x00\x00", 6, 1, fid);
     }
 }
+    
+void writeGIFAppExtension(FILE* fid){
+
+    // Write application extension block to enable animation looping. Should only be written if the file is an animation (i.e., more than one frame supplied)
+    fwrite("\x21\xFF\x0B\x4E\x45\x54\x53\x43\x41\x50\x45\x32\x2E\x30\x03\x01\x00\x00\x00", 19, 1, fid);
+}
 
 void writeGIFFrame(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width, uint32_t height, GIFOptStruct gifopts, int isFirstFrame){
 

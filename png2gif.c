@@ -156,6 +156,11 @@ int main (int argc, char **argv) {
         // If just starting then write the gif header
         if(ftell(fidgif) == 0){
             writeGIFHeader(fidgif, header.Width, header.Height, opts.gifopts);
+            
+            // If more than one frame then write the application extension to enable looping animations
+            if((argc-pngfileind) > 1){
+                writeGIFAppExtension(fidgif);
+            }
         }
         
         // Write frame to gif

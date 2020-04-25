@@ -1,5 +1,4 @@
 -Implement zlib-lite decompressor (to remove the last external library dependency)
--Fix gif looping
 -Make release build
 --MacOS
 --Linux
