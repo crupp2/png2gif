@@ -1,5 +1,2 @@
 -Implement zlib-lite decompressor (to remove the last external library dependency)
--Make release build
---MacOS
---Linux
---Windows
+-Figure out why macOS creates different results for file1i_median.gif and file1a.gif
