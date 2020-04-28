@@ -22,7 +22,7 @@
  SOFTWARE.
  */
 
-#define VERSION "0.1"
+#define VERSION "0.1.1"
 
 #include <string.h>
 #include <getopt.h>
@@ -48,6 +48,7 @@ const char pathSeparator =
 '/';
 #endif
 
+int useGUI = 0;
 
 typedef struct _OptStruct {
     int fileind;
@@ -101,7 +102,7 @@ int main (int argc, char **argv) {
     printf("giffilename=%s\n", giffilename);
     
     // Open the gif file
-    fidgif = fopen(giffilename, "wb");
+    fidgif = NULL;
     
     for(int i=pngfileind; i<argc; i++){
         printf("pngfilename=%s\n", argv[i]);
@@ -113,10 +114,16 @@ int main (int argc, char **argv) {
         // Check for supported PNG formats
         if(header.ColorType != 2 && header.ColorType != 6){
             printf("Error: PNG reader only supports 24-bit or 32-bit Truecolor images (this image colorType=%i)\n", header.ColorType);
+            if(useGUI == 1){
+                tinyfd_messageBox("png2gif error: Unsupported file format", "Error: PNG reader only supports 24-bit or 32-bit Truecolor images, this file is not supported.\n", "ok", "error", 1);
+            }
             return -1;
         }
         if(header.Interlace != 0){
             printf("Error: PNG reader does not support interlaced images\n");
+            if(useGUI == 1){
+                tinyfd_messageBox("png2gif error: Unsupported file format", "Error: PNG reader does not support interlaced images, this file is not supported.\n", "ok", "error", 1);
+            }
             return -1;
         }
         
@@ -153,7 +160,10 @@ int main (int argc, char **argv) {
             return -1;
         }
         
-        // If just starting then write the gif header
+        // If just starting then open the file and write the gif header
+        if(fidgif <= 0){
+            fidgif = fopen(giffilename, "wb");
+	}
         if(ftell(fidgif) == 0){
             writeGIFHeader(fidgif, header.Width, header.Height, opts.gifopts);
             
@@ -238,14 +248,13 @@ OptStruct argParser(int* argc, char ***argv){
     char** args = *argv;
     int ch;
     int printStartText = 1;
-    int useGUI = 0;
     OptStruct opts = newOptStructInst();
 
     // Because Windows is Windows, need to check to see if we are executing from the command line or from a double-click (see https://devblogs.microsoft.com/oldnewthing/20160125-00/?p=92922 except that you can't pass in nullptr or 0 to GetConsoleProcessList)
     // For Windows if double-clicked then start from the GUI, otherwise start without the GUI unless requested
 #if defined(_WIN32) || defined(_WIN64)
-    LPDWORD lpdwProcessList[8];
-    DWORD nproc = GetConsoleProcessList(lpdwProcessList[0], 8);
+    LPDWORD lpdwProcessList[1024];
+    DWORD nproc = GetConsoleProcessList(lpdwProcessList[0], 1024);
     if(nproc == 1){
         // Started by double-click
         useGUI = 1;
