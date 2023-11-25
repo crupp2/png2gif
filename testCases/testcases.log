@@ -1,5 +1,11 @@
 Starting conversion of PNG file(s) to GIF file.
 Options selected:
+giffilename=file1b_zw.gif
+pngfilename=file1b_zw.png
+Error: Image has zero width or height.
+
+Starting conversion of PNG file(s) to GIF file.
+Options selected:
  Color palette "gray" will be used.
 giffilename=file1b.gif
 pngfilename=file1b.png

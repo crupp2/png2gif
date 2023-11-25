@@ -1,8 +1,12 @@
 rem Windows
 set PNG2GIF=..\png2gif.exe
 
+# Test bad image
+%PNG2GIF% file1b_zw.png > testcases.log
+echo "" >> testcases.log
+
 rem Convert single png frame to a single gif frame
-%PNG2GIF% -c gray file1b.png > testcases.log
+%PNG2GIF% -c gray file1b.png >> testcases.log
 %PNG2GIF% file1c.png --colorpalette median >> testcases.log
 %PNG2GIF% file1d.png -c median >> testcases.log
 %PNG2GIF% -t 0.25 file1e.png -c median >> testcases.log

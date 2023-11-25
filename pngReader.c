@@ -29,10 +29,12 @@
 #include "pngReader.h"
 
 #define DEBUG 0
+#define DEBUG_FILTER 0
+#define DEBUG_INFLATE 0
 
 
 void readPNGHeader(FILE* fid, PNGHeader *header){
-    uint8_t buffer[BUFFSIZE];
+    uint8_t buffer[9];
     PNGChunk chunk;
     uint8_t head[]="\x89\x50\x4E\x47\x0D\x0A\x1A\x0A";
     // Read first 8 bytes to make sure they match 89504E47 0D0A1A0A
@@ -47,15 +49,21 @@ void readPNGHeader(FILE* fid, PNGHeader *header){
     
     memset(chunk.Type, '\0', 5);
     while(!feof(fid) && (strncmp((char*)chunk.Type, "IHDR", 4) != 0)){
+        readPNGChunk(fid, &chunk);
 #if DEBUG
         printf("chunk.Type=%s len=%i cmp=%i\n", chunk.Type, chunk.Length, strncmp((char*)chunk.Type, "IHDR", 4));
 #endif
-        readPNGChunk(fid, &chunk);
     }
     
     // Read width and height
     header->Width = byteswap(&chunk.Data[0]);
     header->Height = byteswap(&chunk.Data[4]);
+
+    // Error checking
+    if (header->Width == 0 || header->Height == 0){
+    printf("Error: Image has zero width or height.\n");
+    exit(-1);
+    }
     
     // Read other header data
     // We'll be assuming that BitDepth=8, ColorType=2 or 6, and the rest are 0
@@ -64,6 +72,9 @@ void readPNGHeader(FILE* fid, PNGHeader *header){
     header->Compression = chunk.Data[10];
     header->Filter = chunk.Data[11];
     header->Interlace = chunk.Data[12];
+
+    // De-alloc chunk data
+    free(chunk.Data);
     
 #if DEBUG
     printf("width=%i height=%i\n", header->Width, header->Height);
@@ -97,7 +108,7 @@ void readPNGFrame(FILE* fid, uint32_t width, uint32_t height, uint8_t* frame, ui
         memcpy(&buffer[bufferloc], chunk.Data, sizeof(uint8_t)*chunk.Length);
         bufferloc += sizeof(uint8_t)*chunk.Length;
 #if DEBUG
-        printf("data=%s\n",chunk.Data);
+//        printf("data=%s\n",chunk.Data);
         printf("bufferloc=%d\n",bufferloc);
 #endif
     }
@@ -129,6 +140,7 @@ void readPNGFrame(FILE* fid, uint32_t width, uint32_t height, uint8_t* frame, ui
     defilterPNGFrame(width, height, frame, bytesPerPixel);
     
     // Free allocated memory
+    free(chunk.Data);
     free(buffer);
 }
 
@@ -155,6 +167,9 @@ void readPNGChunk(FILE* fid, PNGChunk *chunk){
 #if DEBUG
     printf("chunk->type=%s\n", chunk->Type);
 #endif
+
+    // Allocate memory for the data
+    chunk->Data = malloc(sizeof(uint8_t)*chunk->Length);
     
     // Read data
     fread(chunk->Data, 1, chunk->Length, fid);
@@ -198,7 +213,7 @@ void defilterPNGFrame(uint32_t width, uint32_t height, uint8_t* frame, uint8_t b
     for(i=0;i<height;i++){
         // Read filter type byte
         filtertype = *framereadptr++;
-#if DEBUG
+#if DEBUG_FILTER
         printf("Filter %i used on line %i\n", filtertype, i);
 #endif
         
@@ -294,11 +309,11 @@ void defilterPNGFrame(uint32_t width, uint32_t height, uint8_t* frame, uint8_t b
                 if(bytesPerPixel > 3){framereadptr++;}
                 // Continue with the rest of the line
                 for(j=1;j<width;j++){
-#if DEBUG
+#if DEBUG_FILTER
                     printf("px(%i):",j);
 #endif
                     for(k=0;k<3;k++){
-#if DEBUG
+#if DEBUG_FILTER
                         printf("(%i,",*framereadptr);
 #endif
                         if(i==0){
@@ -306,22 +321,22 @@ void defilterPNGFrame(uint32_t width, uint32_t height, uint8_t* frame, uint8_t b
                         }else{
                             (*framewriteptr++) = (*framereadptr++) + PaethPredictor(*a++, *b++, *c++);
                         }
-#if DEBUG
+#if DEBUG_FILTER
                         printf("%i,a=%i,b=%i,c=%i)",*(framewriteptr-1), *(a-1), *(b-1), *(c-1));
 #endif
                     }
-#if DEBUG
+#if DEBUG_FILTER
                     printf(", ");
 #endif
                     // Skip alpha byte if necessary
                     if(bytesPerPixel > 3){framereadptr++;}
                 }
-#if DEBUG
+#if DEBUG_FILTER
                 printf("\n		");
 #endif
                 break;
             default:
-#if DEBUG
+#if DEBUG_FILTER
                 printf("Error: unknown filter type %d\n", filtertype);
 #endif
                 return;
@@ -371,7 +386,7 @@ uint32_t inflateData(z_stream *zstrm, uint8_t *source, uint32_t sourcelen, uint8
         
         /* run inflate() on input until output buffer not full */
         do {
-#if DEBUG
+#if DEBUG_INFLATE
             printf("destlen=%d\n", destlen);
 #endif
             zstrm->avail_out = destlen;
@@ -389,12 +404,12 @@ uint32_t inflateData(z_stream *zstrm, uint8_t *source, uint32_t sourcelen, uint8
                     zerr(ret);
                     return 0;
                 case Z_STREAM_END:
-#if DEBUG
+#if DEBUG_INFLATE
                     printf("Z_STREAM_END reached\n");
 #endif
                     return have;
             }
-#if DEBUG
+#if DEBUG_INFLATE
             printf("strm.avail_in=%d\n", zstrm->avail_in);
             printf("strm.avail_out=%d\n", zstrm->avail_out);
             printf("strm.total_out=%lu\n", zstrm->total_out);

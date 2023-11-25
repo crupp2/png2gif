@@ -19,7 +19,7 @@ This project started with the naive assumption that "Oh, this is just a matter o
 
 ## Building
 
-./buildme.sh
+./buildme_<platform>.sh
 
 ## Acknowledgements
 

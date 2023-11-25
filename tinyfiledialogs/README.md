@@ -1,3 +1,3 @@
-tinyfiledialogs downloaded from official repository at https://sourceforge.net/projects/tinyfiledialogs/ in order to get the latest version (3.5.1).
+Version 3.15.1 of tinyfiledialogs downloaded from official repository at https://sourceforge.net/projects/tinyfiledialogs/.
 
 Licensed under the zlib/libpng license.

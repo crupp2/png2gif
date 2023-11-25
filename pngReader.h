@@ -30,8 +30,6 @@
 #include <stdint.h>
 #include <zlib.h>
 
-#define BUFFSIZE 16384
-
 typedef struct _PNGHeader {
     uint32_t Width;
     uint32_t Height;
@@ -47,7 +45,7 @@ typedef struct _PNGChunk
     uint8_t DataLength[4];   /* Size of Data field in bytes */
     uint32_t Length;
     char Type[5];         /* Code identifying the type of chunk */
-    uint8_t Data[BUFFSIZE];       /* The actual data stored by the chunk */
+    uint8_t* Data;       /* The actual data stored by the chunk */
     uint8_t CRC[4];          /* CRC-32 value of the Type and Data fields */
 } PNGChunk;
 

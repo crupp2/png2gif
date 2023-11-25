@@ -79,6 +79,12 @@ void writeGIFHeader(FILE* fid, uint32_t width, uint32_t height, GIFOptStruct gif
     uint8_t head[] = "\x47\x49\x46\x38\x39\x61";
     
     printf("Writing gif header\n");
+
+    // Error checking
+    if (width == 0 || height == 0){
+    printf("Error: Image has zero width or height.\n");
+    exit(-1);
+    }
     
     // Write gif header
     fwrite(head, 6, 1, fid);
@@ -123,6 +129,12 @@ void writeGIFFrame(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t width
     printf("Writing gif local image descriptor\n");
     printf("width=%d, height=%d\n", width, height);
 #endif
+
+    // Error checking
+    if (width == 0 || height == 0){
+    printf("Error: Image has zero width or height.\n");
+    exit(-1);
+    }
     
     // Write graphics control extension block
     fwrite("\x21\xF9\x04", 3, 1, fid);
@@ -590,7 +602,7 @@ uint32_t writeGIFLCT(FILE* fid, uint8_t* frame, uint8_t* lastframe, uint32_t wid
     bufferptr = buffer;
     qsort((void*)bufferptr, npixel, sizeof(SortedPixel), comparefcn_frameind);
     
-    // Dither the image based on the smaller color pallete
+    // Dither the image based on the smaller color palette
     if(gifopts.dither > 0){
         // Compress unique down to the color table size to speed up dithering
 #if DEBUG
